@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# mkapp - generates folder and file structures for applications of various types
+#
+# Currently supported:
+#  - Bash
+#  - Node Web App (Various options)
+#  - Python Web App (Flask, Django)
+#  - 
+
+# Load lib
+. $(find ~ -type f -name .lib | grep .clapp | head -1)
+
+# Main container
+__mkapp() {
+  # Set prog states or list usage since this cannot run without args
+  [ ! -z "$1" ] && __args $@ || echo "`cat ~/.clapp/help | head -1`"
+}
+
+# Run container
+__mkapp $@
+
+# Cleanup
+unset __mkapp

@@ -1,0 +1,13 @@
+Usage: clapp [-h|--help|-v|--version] [-t|---type] <bash|node|python> [-n|--name] <appname> [-l|--location] <applocation>
+
+Options:
+
+    -t | --type  -  Sets the type of app clapp will make
+
+    -n | --name  -  Sets the name of the app (Used for app metadata as well)
+
+    -l | --location  - Sets the path/location of the app
+    
+    -h | --help  -  Shows this page
+
+    -v | --version  -  Shows current version of clapp

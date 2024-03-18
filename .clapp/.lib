@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Funcs and vars
+s_appname=""
+s_apptype=""
+s_apploc=""
+s_usercwd=`pwd`
+
+__settype() {
+  [ -z "$1" ] && echo "$s_apptype" || s_apptype="$1"
+}
+__setname() {
+  [ -z "$1" ] && echo "$s_appname" || s_appname="$1"
+}
+__setloc() {
+  [ -z "$1" ] && echo "$s_apploc" || s_apploc="$1"
+}
+
+__args() {
+  while [[ "$1" =~ "-" ]]; do
+    case $1 in
+      -t | --type )
+        shift; __settype "$1"
+        ;;
+      -n | --name )
+        shift; __setname "$1"
+        ;;
+      -l | --location )
+        shift; __setloc "$1"
+        ;;
+      -h | --help )
+        echo "`cat ~/.clapp/help`"
+        break;;
+      -v | --version )
+        echo "`cat ~/.clapp/version`"
+        break;;
+      * )
+        echo "Option '$1' not found!"
+        exit;;
+    esac
+    shift
+  done;
+  # __settype
+  # __setname
+  # __setloc
+}
