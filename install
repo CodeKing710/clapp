@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Install script for clapp
+install() {
+  local repo=$(find ~ -type d -name clapp)
+  cp $repo/clapp ~/bin || return
+  cp -r $repo/.clapp ~ || return
+  echo "CLApp installed!"
+}
+
+install
