@@ -4,30 +4,46 @@
 s_appname=""
 s_apptype=""
 s_apploc=""
+declare -A s_appopts
 s_usercwd=`pwd`
 
-__settype() {
+# Getter/Setters for states
+__gstype() {
   [ -z "$1" ] && echo "$s_apptype" || s_apptype="$1"
 }
-__setname() {
+__gsname() {
   [ -z "$1" ] && echo "$s_appname" || s_appname="$1"
 }
-__setloc() {
+__gsloc() {
   [ -z "$1" ] && echo "$s_apploc" || s_apploc="$1"
 }
+__gsopts() {
+  if [ -z "$1" ]; then
+    echo "$s_appopts"
+  else
+    # TODO
+  fi
+}
 
+# Functionality
+# __mknode() {}
+# __mkpy() {}
 __args() {
   while [[ "$1" =~ "-" ]]; do
     case $1 in
       -t | --type )
-        shift; __settype "$1"
+        shift; __gstype "$1"
         ;;
       -n | --name )
-        shift; __setname "$1"
+        shift; __gsname "$1"
         ;;
       -l | --location )
-        shift; __setloc "$1"
+        shift; __gsloc "$1"
         ;;
+      -o | --options )
+        # This should be last, otherwise the function may fail, make sure next 2 args are options
+        shift; [[ "$1" =~ "=" && "$2" =~ "=" ]] && __gsopts "$@" || echo "'-o' must only be followed by options, if you want to pass other arguments, put them before '-o'!"
+        ;; 
       -h | --help )
         echo "`cat ~/.clapp/help`"
         break;;

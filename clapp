@@ -14,7 +14,25 @@
 # Main container
 __mkapp() {
   # Set prog states or list usage since this cannot run without args
-  [ ! -z "$1" ] && __args $@ || echo "`cat ~/.clapp/help | head -1`"
+  if [ ! -z "$1" ]; then
+    __args $@ 
+  else
+    echo "`cat ~/.clapp/help | head -1`"
+    return
+  fi
+
+  # Parse states into respective apps
+  case "${s__apptype,}" in
+    n | node )
+      __mknode # No args required as the function relies on the states
+      ;;
+    py | python )
+      __mkpy
+      ;;
+    * )
+      echo -e "\e[0;1;31m[CLApp] App type unknown! Defaulting to general project structure!"
+      return;;
+  esac
 }
 
 # Run container
