@@ -6,6 +6,7 @@ s_apptype=""
 s_apploc=""
 declare -A s_appopts
 s_usercwd=`pwd`
+__errtxt='\e[0;1;31m[CLApp]'
 
 # Getter/Setters for states
 __gstype() {
@@ -21,7 +22,7 @@ __gsopts() {
   if [ -z "$1" ]; then
     echo "$s_appopts"
   else
-    # TODO
+    echo "In progress"
   fi
 }
 

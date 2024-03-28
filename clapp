@@ -8,6 +8,9 @@
 #  - Python Web App (Flask, Django)
 #  - 
 
+# Check for updates to the repo
+[[ `diff $(find ~ -type d -name clapp)/.clapp/version ~/.clapp/version` ]] && ( echo "Updating CLApp..."; $(find ~ -type d -name clapp)/install )
+
 # Load lib
 . $(find ~ -type f -name .lib | grep .clapp | head -1)
 
@@ -29,8 +32,11 @@ __mkapp() {
     py | python )
       __mkpy
       ;;
+    sh | bash )
+      __mksh
+      ;;
     * )
-      echo -e "\e[0;1;31m[CLApp] App type unknown! Defaulting to general project structure!"
+      echo -e "$__errtxt App type unknown! Defaulting to general project structure!"
       return;;
   esac
 }
