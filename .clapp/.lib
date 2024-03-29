@@ -6,7 +6,8 @@ s_apptype=""
 s_apploc=""
 declare -A s_appopts
 s_usercwd=`pwd`
-__errtxt='\e[0;1;31m[CLApp]'
+__errtxt='echo -e ''\e[0;3;31m[ERROR] '
+__systxt='echo -e ''\e[0;1;36m[CLApp]\e[0;0;0m '
 
 # Getter/Setters for states
 __gstype() {
@@ -42,13 +43,13 @@ __args() {
     # Arg parsing failure will force exit the program
     case $1 in
       -t | --type )
-        shift; [ ! -z "$1" ] && __gstype "$1" || ( echo "Must supply value to argument!"; exit )
+        shift; [ ! -z "$1" ] && __gstype "$1" || ( $__errtxt"Must supply value to argument!"; exit )
         ;;
       -n | --name )
-        shift; [ ! -z "$1" ] && __gsname "$1" || ( echo "Must supply value to argument!"; exit )
+        shift; [ ! -z "$1" ] && __gsname "$1" || ( $__errtxt"Must supply value to argument!"; exit )
         ;;
       -l | --location )
-        shift; [ ! -z "$1" ] && __gsloc "$1" || ( echo "Must supply value to argument!"; exit )
+        shift; [ ! -z "$1" ] && __gsloc "$1" || ( $__errtxt"Must supply value to argument!"; exit )
         ;;
       -o | --options )
         # This should be last, otherwise the function may fail, make sure next 2 args are options
@@ -57,7 +58,7 @@ __args() {
         if [[ "$1" =~ "=" ]]; then
           __gsopts "$@"
         else
-          echo "'-o' must only be followed by options, if you want to pass other arguments, put them before '-o'!"
+          $__errtxt"'-o' must only be followed by options, if you want to pass other arguments, put them before '-o'!"
           exit
         fi
         ;;
@@ -68,11 +69,11 @@ __args() {
         echo "`cat ~/.clapp/version`"
         exit;;
       -u | --update )
-        echo "Updating CLApp..."
+        $__systxt"Updating CLApp..."
         $(find ~ -type d -name clapp)/install
         exit;;
       * )
-        echo "Option '$1' not found!"
+        $__errtxt"Option '$1' not found!"
         exit;;
     esac
     shift

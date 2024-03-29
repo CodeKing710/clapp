@@ -9,7 +9,7 @@
 #  - 
 
 # Check for updates to the repo
-[[ `diff $(find ~ -type d -name clapp)/.clapp/version ~/.clapp/version` ]] && ( echo "Updating CLApp..."; $(find ~ -type d -name clapp)/install )
+[[ `diff $(find ~ -type d -name clapp)/.clapp/version ~/.clapp/version` ]] && ( $__systxt"Updating CLApp..."; $(find ~ -type d -name clapp)/install )
 
 # Load lib
 . $(find ~ -type f -name .lib | grep .clapp | head -1)
@@ -36,7 +36,7 @@ __mkapp() {
       __mksh
       ;;
     * )
-      echo -e "$__errtxt App type unknown! Defaulting to general project structure!"
+      $__errtxt"App type unknown! Defaulting to general project structure!"
       return;;
   esac
 }
