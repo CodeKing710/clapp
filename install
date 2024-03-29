@@ -5,7 +5,7 @@ install() {
   local repo=$(find ~ -type d -name clapp)
   cp $repo/clapp ~/bin || return
   cp -r $repo/.clapp ~ || return
-  echo "CLApp installed!"
+  echo -e "\e[0;1;36m[CLApp]\e[0;0;0m CLApp installed!"
 }
 
 install

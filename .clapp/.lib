@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # Funcs and vars
-s_appname=""
-s_apptype=""
-s_apploc=""
+s_appname="my_app"
+s_apptype="sh"
+s_apploc='`pwd`/$s_appname'
 declare -A s_appopts
 s_usercwd=`pwd`
-__errtxt='echo -e ''\e[0;3;31m[ERROR] '
+__errtxt='echo -e ''\e[0;1;31m[ERROR] '
 __systxt='echo -e ''\e[0;1;36m[CLApp]\e[0;0;0m '
 
 # Getter/Setters for states
@@ -29,7 +29,15 @@ __gsopts() {
       local option="`echo "$arg" | cut -d '=' -f1`"
       local value="`echo "$arg" | cut -d '=' -f2`"
 
-      s_appopts[$option]="$value"
+      if [[ "$option" == "name" ]]; then
+        s_appname="$value"
+      elif [[ "$option" == "type" ]]; then
+        s_apptype="$value"
+      elif [[ "$option" == "location" ]]; then
+        s_apploc="$value"
+      else
+        s_appopts[$option]="$value"
+      fi
     done
   fi
 }
@@ -37,7 +45,56 @@ __gsopts() {
 # Functionality
 # __mknode() {}
 # __mkpy() {}
-# __mksh() {}
+__mksh() {
+  local libfile=`cat <<-LIB
+# $s_appname library file
+LIB
+`
+  local appfile=`cat <<-APP
+# $s_appname main program file
+APP
+`
+  __opts # "$libfile\n$appfile" # Process options
+  mkdir "$s_apploc"
+  if [ ${s_appopts[allone]} ]; then
+    touch "$s_apploc/version"
+    touch "$s_apploc/help"
+    echo -e "#!/bin/bash\n\n$libfile\n$appfile" >> "$s_apploc/$s_appname"
+  else
+    touch "$s_apploc/.$s_appname/version"
+    touch "$s_apploc/.$s_appname/help"
+    echo -e "#!/bin/bash\n\n$libfile" >> "$s_apploc/.$s_appname/.lib"
+    echo -e "#!/bin/bash\n\n$appfile" >> "$s_apploc/$s_appname"
+  fi
+}
+
+# Parsing
+# Options take precedence over arguments
+# Setting name, type, or location in options will override 
+__opts() {
+  for key in "${!s_appopts[@]}"; do
+    case $key in
+      # Boolean
+      src )
+        s_apploc="$s_apploc/src"
+        ;;
+      # allone )
+      #   cd "$s_apploc"
+      #   echo -e "$1"
+      #   ;;
+      repo )
+        cd "$s_apploc"
+        echo "# $s_appname" >> readme.md
+        git init
+        cd $s_usercwd
+        ;;
+      * )
+        $__errtxt"Not an option!"
+        ;;
+    esac
+  done
+}
+
 __args() {
   while [[ "$1" =~ "-" ]]; do
     # Arg parsing failure will force exit the program

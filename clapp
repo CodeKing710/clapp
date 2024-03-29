@@ -37,6 +37,7 @@ __mkapp() {
       ;;
     * )
       $__errtxt"App type unknown! Defaulting to general project structure!"
+      s_apptype="sh" # Set since the type was overridden with unknown type
       return;;
   esac
 }
