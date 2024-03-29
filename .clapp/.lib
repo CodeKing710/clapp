@@ -20,44 +20,62 @@ __gsloc() {
 }
 __gsopts() {
   if [ -z "$1" ]; then
-    echo "$s_appopts"
+    for key in "${!s_appopts[@]}"; do
+        echo "$key: ${s_appopts[$key]}"
+    done
   else
-    echo "In progress"
+    for arg in $@; do
+      local option="`echo "$arg" | cut -d '=' -f1`"
+      local value="`echo "$arg" | cut -d '=' -f2`"
+
+      s_appopts[$option]="$value"
+    done
   fi
 }
 
 # Functionality
 # __mknode() {}
 # __mkpy() {}
+# __mksh() {}
 __args() {
   while [[ "$1" =~ "-" ]]; do
+    # Arg parsing failure will force exit the program
     case $1 in
       -t | --type )
-        shift; __gstype "$1"
+        shift; [ ! -z "$1" ] && __gstype "$1" || ( echo "Must supply value to argument!"; exit )
         ;;
       -n | --name )
-        shift; __gsname "$1"
+        shift; [ ! -z "$1" ] && __gsname "$1" || ( echo "Must supply value to argument!"; exit )
         ;;
       -l | --location )
-        shift; __gsloc "$1"
+        shift; [ ! -z "$1" ] && __gsloc "$1" || ( echo "Must supply value to argument!"; exit )
         ;;
       -o | --options )
         # This should be last, otherwise the function may fail, make sure next 2 args are options
-        shift; [[ "$1" =~ "=" && "$2" =~ "=" ]] && __gsopts "$@" || echo "'-o' must only be followed by options, if you want to pass other arguments, put them before '-o'!"
-        ;; 
+        shift;
+        # echo "$@"
+        if [[ "$1" =~ "=" ]]; then
+          __gsopts "$@"
+        else
+          echo "'-o' must only be followed by options, if you want to pass other arguments, put them before '-o'!"
+          exit
+        fi
+        ;;
       -h | --help )
         echo "`cat ~/.clapp/help`"
-        break;;
+        exit;;
       -v | --version )
         echo "`cat ~/.clapp/version`"
-        break;;
+        exit;;
+      -u | --update )
+        echo "Updating CLApp..."
+        $(find ~ -type d -name clapp)/install
+        exit;;
       * )
         echo "Option '$1' not found!"
         exit;;
     esac
     shift
   done;
-  # __settype
-  # __setname
-  # __setloc
+  # __gsopts
 }

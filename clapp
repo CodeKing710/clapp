@@ -18,7 +18,7 @@
 __mkapp() {
   # Set prog states or list usage since this cannot run without args
   if [ ! -z "$1" ]; then
-    __args $@ 
+    __args $@
   else
     echo "`cat ~/.clapp/help | head -1`"
     return
