@@ -3,21 +3,35 @@
 # Funcs and vars
 s_appname="my_app"
 s_apptype="sh"
-s_apploc='`pwd`/$s_appname'
+s_apploc="`pwd`/$s_appname"
 declare -A s_appopts
 s_usercwd=`pwd`
 __errtxt='echo -e ''\e[0;1;31m[ERROR] '
 __systxt='echo -e ''\e[0;1;36m[CLApp]\e[0;0;0m '
+__devtxt='echo -e ''\e[0;1;95m[CLAppDev]\e[0;0;0m '
 
 # Getter/Setters for states
 __gstype() {
-  [ -z "$1" ] && echo "$s_apptype" || s_apptype="$1"
+  if [ -z "$1" ]; then
+    echo "$s_apptype"
+  else
+    s_apptype="$1"
+  fi
 }
 __gsname() {
-  [ -z "$1" ] && echo "$s_appname" || s_appname="$1"
+  if [ -z "$1" ]; then
+    echo "$s_appname"
+  else
+    s_appname="$1"
+    s_apploc="`pwd`/$s_appname"
+  fi
 }
 __gsloc() {
-  [ -z "$1" ] && echo "$s_apploc" || s_apploc="$1"
+  if [ -z "$1" ]; then
+    echo "$s_apploc"
+  else
+    s_apploc="$1/$s_appname"
+  fi
 }
 __gsopts() {
   if [ -z "$1" ]; then
@@ -46,26 +60,34 @@ __gsopts() {
 # __mknode() {}
 # __mkpy() {}
 __mksh() {
+  # Check if app already exists in that location
+  [ -d "$s_apploc" ] && $__errtxt"App with that name already exists!" && exit
+
   local libfile=`cat <<-LIB
 # $s_appname library file
 LIB
-`
+  `
   local appfile=`cat <<-APP
 # $s_appname main program file
 APP
-`
-  __opts # "$libfile\n$appfile" # Process options
+  `
+  $__systxt"Generating $s_appname in location $s_apploc..."
+  [ $__DEV ] && ( $__devtxt"Options: "; __gsopts )
   mkdir "$s_apploc"
+  __opts # "$libfile\n$appfile" # Process options
   if [ ${s_appopts[allone]} ]; then
     touch "$s_apploc/version"
     touch "$s_apploc/help"
     echo -e "#!/bin/bash\n\n$libfile\n$appfile" >> "$s_apploc/$s_appname"
   else
+    mkdir "$s_apploc/.$s_appname"
     touch "$s_apploc/.$s_appname/version"
     touch "$s_apploc/.$s_appname/help"
     echo -e "#!/bin/bash\n\n$libfile" >> "$s_apploc/.$s_appname/.lib"
     echo -e "#!/bin/bash\n\n$appfile" >> "$s_apploc/$s_appname"
   fi
+  $__systxt"Successfully made app $s_appname in location $s_apploc!"
+  $__systxt"Refer to documentation in clapp (clapp --docs) on further setup!"
 }
 
 # Parsing
@@ -83,9 +105,7 @@ __opts() {
       #   echo -e "$1"
       #   ;;
       repo )
-        cd "$s_apploc"
-        echo "# $s_appname" >> readme.md
-        git init
+        cd "$s_apploc" && git init >>/dev/null && echo "# $s_appname" >> readme.md
         cd $s_usercwd
         ;;
       * )
@@ -100,13 +120,19 @@ __args() {
     # Arg parsing failure will force exit the program
     case $1 in
       -t | --type )
-        shift; [ ! -z "$1" ] && __gstype "$1" || ( $__errtxt"Must supply value to argument!"; exit )
+        shift
+        # [ __DEV ] && $__devtxt"Setting app type to $1"
+        [ ! -z "$1" ] && __gstype "$1" || ( $__errtxt"Must supply value to argument!"; exit )
         ;;
       -n | --name )
-        shift; [ ! -z "$1" ] && __gsname "$1" || ( $__errtxt"Must supply value to argument!"; exit )
+        shift
+        # [ __DEV ] && $__devtxt"Setting app name to $1"
+        [ ! -z "$1" ] && __gsname "$1" || ( $__errtxt"Must supply value to argument!"; exit )
         ;;
       -l | --location )
-        shift; [ ! -z "$1" ] && __gsloc "$1" || ( $__errtxt"Must supply value to argument!"; exit )
+        shift
+        # [ __DEV ] && $__devtxt"Setting app location to $1"
+        [ ! -z "$1" ] && __gsloc "$1" || ( $__errtxt"Must supply value to argument!"; exit )
         ;;
       -o | --options )
         # This should be last, otherwise the function may fail, make sure next 2 args are options
@@ -129,11 +155,18 @@ __args() {
         $__systxt"Updating CLApp..."
         $(find ~ -type d -name clapp)/install
         exit;;
+      # --docs )
+      #   ;;
+      -V | --verbose )
+        __DEV=true
+        ;;
       * )
         $__errtxt"Option '$1' not found!"
         exit;;
     esac
     shift
   done;
-  # __gsopts
+  [ $__DEV ] && $__devtxt"Type: `__gstype`"
+  [ $__DEV ] && $__devtxt"Name: `__gsname`"
+  [ $__DEV ] && $__devtxt"Path: `__gsloc`"
 }

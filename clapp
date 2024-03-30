@@ -17,15 +17,15 @@
 # Main container
 __mkapp() {
   # Set prog states or list usage since this cannot run without args
-  if [ ! -z "$1" ]; then
+  # if [ ! -z "$1" ]; then
     __args $@
-  else
-    echo "`cat ~/.clapp/help | head -1`"
-    return
-  fi
+  # else
+    # echo "`cat ~/.clapp/help | head -1`"
+    # return
+  # fi
 
   # Parse states into respective apps
-  case "${s__apptype,}" in
+  case "${s_apptype,}" in
     n | node )
       __mknode # No args required as the function relies on the states
       ;;
@@ -38,7 +38,7 @@ __mkapp() {
     * )
       $__errtxt"App type unknown! Defaulting to general project structure!"
       s_apptype="sh" # Set since the type was overridden with unknown type
-      return;;
+      ;;
   esac
 }
 
