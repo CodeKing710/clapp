@@ -63,29 +63,90 @@ __mksh() {
   # Check if app already exists in that location
   [ -d "$s_apploc" ] && $__errtxt"App with that name already exists!" && exit
 
+  local srced=`[ ${s_appopts[src]} ] && echo $s_appname/src || echo $s_appname`
   local libfile=`cat <<-LIB
-# $s_appname library file
+# $s_appname's Functions and Variables
+
+# Vars
+__cwd=\\\`pwd\\\`
+
+# Funcs
+__args() {
+  # Process args
+  while [[ "\\\$1" =~ '-' ]]; do
+    # ALL CASE STATEMENT OPTIONS SHOULD END WITH 'exit;;'!!
+    case "\\\$1" in
+      * ) # Catch-all
+        echo "\\"\\\$1\\" is not an argument!"
+        exit;;
+    esac
+  done
+}
 LIB
   `
   local appfile=`cat <<-APP
-# $s_appname main program file
+# $s_appname's main code
+
+# Check for updates
+[ ! -d ~/.$s_appname ] && \\\$(find ~ -type d -name $srced)/install
+[[ \\\`diff \\\$(find ~ -type d -name $srced)/.$s_appname ~/.$s_appname\\\` ]] && ( echo "Updating $s_appname..."; \\\$(find ~ -type d -name $srced)/install )
+
+# Load lib
+source ~/.clapp/.lib
+
+__$s_appname() {
+  __args \\\$@
+  # Write your app's main flow here (General stub supports arg handling)
+}
+
+__$s_appname \\\$@
+
+# Cleanup for accidental sourcing
+unset __$s_appname __args __cwd
 APP
   `
+  local installfile=`cat <<-INS
+#!/bin/bash
+
+# $s_appname's installer
+install() {
+  local repo=\\\$(find ~ -type d -name $s_appname)
+  cp \\\$repo/$s_appname ~/bin || return false
+  cp -r \\\$repo/.$s_appname ~ || return false
+  echo "$s_appname installed!"
+}
+
+install || echo "Install failed!"
+INS
+  `
+
+  # Begin generating folders and files
   $__systxt"Generating $s_appname in location $s_apploc..."
   [ $__DEV ] && ( $__devtxt"Options: "; __gsopts )
   mkdir "$s_apploc"
-  __opts # "$libfile\n$appfile" # Process options
+  __opts # Process options
+
+  # Generate based on all-in-one
   if [ ${s_appopts[allone]} ]; then
     touch "$s_apploc/version"
     touch "$s_apploc/help"
     echo -e "#!/bin/bash\n\n$libfile\n$appfile" >> "$s_apploc/$s_appname"
+    chmod u+x "$s_apploc/$s_appname"
   else
     mkdir "$s_apploc/.$s_appname"
     touch "$s_apploc/.$s_appname/version"
     touch "$s_apploc/.$s_appname/help"
     echo -e "#!/bin/bash\n\n$libfile" >> "$s_apploc/.$s_appname/.lib"
     echo -e "#!/bin/bash\n\n$appfile" >> "$s_apploc/$s_appname"
+    chmod u+x "$s_apploc/.$s_appname/.lib"
+    chmod u+x "$s_apploc/$s_appname"
   fi
+
+  # Generate install file
+  echo "$installfile" >> "$s_apploc/install"
+  chmod u+x "$s_apploc/install"
+
+  # If we got here, we succeeded
   $__systxt"Successfully made app $s_appname in location $s_apploc!"
   $__systxt"Refer to documentation in clapp (clapp --docs) on further setup!"
 }
@@ -98,6 +159,7 @@ __opts() {
     case $key in
       # Boolean
       src )
+        mkdir "$s_apploc/src"
         s_apploc="$s_apploc/src"
         ;;
       # allone )
@@ -114,7 +176,6 @@ __opts() {
     esac
   done
 }
-
 __args() {
   while [[ "$1" =~ "-" ]]; do
     # Arg parsing failure will force exit the program
