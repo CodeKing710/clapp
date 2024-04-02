@@ -4,6 +4,7 @@
 s_appname="my_app"
 s_apptype="sh"
 s_apploc="`pwd`/$s_appname"
+__srced="$s_appname"
 declare -A s_appopts
 s_usercwd=`pwd`
 __errtxt='echo -e ''\e[0;1;31m[ERROR] '
@@ -61,9 +62,8 @@ __gsopts() {
 # __mkpy() {}
 __mksh() {
   # Check if app already exists in that location
-  [ -d "$s_apploc" ] && $__errtxt"App with that name already exists!" && exit
-
-  local srced=`[ ${s_appopts[src]} ] && echo $s_appname/src || echo $s_appname`
+  __opts # Process app options and properties
+  
   local libfile=`cat <<-LIB
 # $s_appname's Functions and Variables
 
@@ -89,10 +89,10 @@ LIB
 
 # Check for updates
 [ ! -d ~/.$s_appname ] && \\\$(find ~ -type d -name $srced)/install
-[[ \\\`diff \\\$(find ~ -type d -name $srced)/.$s_appname ~/.$s_appname\\\` ]] && ( echo "Updating $s_appname..."; \\\$(find ~ -type d -name $srced)/install )
+if [[ \\\`diff \\\$(find ~ -type d -name $srced)/.$s_appname ~/.$s_appname\\\` ]]; then echo "Updating $s_appname..."; \\\$(find ~ -type d -name $srced)/install; fi
 
 # Load lib
-source ~/.clapp/.lib
+source ~/.$s_appname/.lib
 
 __$s_appname() {
   __args \\\$@
@@ -110,7 +110,7 @@ APP
 
 # $s_appname's installer
 install() {
-  local repo=\\\$(find ~ -type d -name $s_appname)
+  local repo=\\\$(find ~ -type d -name $srced)
   cp \\\$repo/$s_appname ~/bin || return false
   cp -r \\\$repo/.$s_appname ~ || return false
   echo "$s_appname installed!"
@@ -119,13 +119,6 @@ install() {
 install || echo "Install failed!"
 INS
   `
-
-  # Begin generating folders and files
-  $__systxt"Generating $s_appname in location $s_apploc..."
-  [ $__DEV ] && ( $__devtxt"Options: "; __gsopts )
-  mkdir "$s_apploc"
-  __opts # Process options
-
   # Generate based on all-in-one
   if [ ${s_appopts[allone]} ]; then
     touch "$s_apploc/version"
@@ -153,8 +146,17 @@ INS
 
 # Parsing
 # Options take precedence over arguments
-# Setting name, type, or location in options will override 
+# Setting name, type, or location in options will override
 __opts() {
+  # Begin generating folders and files
+  [ -d "$s_apploc" ] && $__errtxt"App with that name already exists!" && exit
+
+  __srced=`[ ${s_appopts[src]} ] && echo $s_appname/src || echo $s_appname`
+  $__systxt"Generating $s_appname in location $s_apploc..."
+  [ $__DEV ] && ( $__devtxt"Options: "; __gsopts )
+  mkdir "$s_apploc"
+
+  # Parse general options
   for key in "${!s_appopts[@]}"; do
     case $key in
       # Boolean
@@ -162,10 +164,6 @@ __opts() {
         mkdir "$s_apploc/src"
         s_apploc="$s_apploc/src"
         ;;
-      # allone )
-      #   cd "$s_apploc"
-      #   echo -e "$1"
-      #   ;;
       repo )
         cd "$s_apploc" && git init >>/dev/null && echo "# $s_appname" >> readme.md
         cd $s_usercwd
