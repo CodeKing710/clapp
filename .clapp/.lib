@@ -58,10 +58,31 @@ __gsopts() {
 }
 
 # Functionality
-# __mknode() {}
-# __mkpy() {}
+__mknode() {
+  [[ `command -v npm || command -v node` ]] && $__errtxt"NodeJS Not Installed!" && exit
+  __opts
+
+}
+__mkpy() {
+  [[ `command -v python || command -v python3` ]] && $__errtxt"Python Not Installed!" && exit
+  __opts
+
+  local main=`cat <<-MAIN
+#!/bin/env python
+
+# $s_appname - Does things and stuff
+MAIN
+  `
+  touch "$s_apploc/version"
+  touch "$s_apploc/help"
+  echo -e "$main" >> "$s_apploc/$s_appname.py"
+  chmod u+x "$s_apploc/$s_appname"
+
+  # If we got here, we succeeded
+  $__systxt"Successfully made app $s_appname in location $s_apploc!"
+  $__systxt"Refer to documentation in clapp (clapp --docs) on further setup!"
+}
 __mksh() {
-  # Check if app already exists in that location
   __opts # Process app options and properties
   
   local libfile=`cat <<-LIB
@@ -88,8 +109,8 @@ LIB
 # $s_appname's main code
 
 # Check for updates
-[ ! -d ~/.$s_appname ] && \\\$(find ~ -type d -name $srced)/install
-if [[ \\\`diff \\\$(find ~ -type d -name $srced)/.$s_appname ~/.$s_appname\\\` ]]; then echo "Updating $s_appname..."; \\\$(find ~ -type d -name $srced)/install; fi
+[ ! -d ~/.$s_appname ] && \\\$(find ~ -type d -name $__srced)/install
+if [[ \\\`diff \\\$(find ~ -type d -name $__srced)/.$s_appname ~/.$s_appname\\\` ]]; then echo "Updating $s_appname..."; \\\$(find ~ -type d -name $__srced)/install; fi
 
 # Load lib
 source ~/.$s_appname/.lib
@@ -110,7 +131,7 @@ APP
 
 # $s_appname's installer
 install() {
-  local repo=\\\$(find ~ -type d -name $srced)
+  local repo=\\\$(find ~ -type d -name $__srced)
   cp \\\$repo/$s_appname ~/bin || return false
   cp -r \\\$repo/.$s_appname ~ || return false
   echo "$s_appname installed!"
@@ -211,8 +232,8 @@ __args() {
         echo "`cat ~/.clapp/version`"
         exit;;
       -u | --update )
-        $__systxt"Updating CLApp..."
-        $(find ~ -type d -name clapp)/install
+        # Clapp does this by default, this ensures clapp doesn't continue execution
+        [[ `diff ~/bin/clapp $(find ~ -type d -name clapp)/clapp` ]] || $__systxt"CLApp up to date!"
         exit;;
       # --docs )
       #   ;;

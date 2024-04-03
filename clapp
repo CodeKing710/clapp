@@ -9,7 +9,7 @@
 #  - 
 
 # Check for updates to the repo
-if [[ `diff $(find ~ -type d -name clapp)/.clapp ~/.clapp` || `diff $(find ~ -type d -name clapp)/clapp ~/bin/clapp` ]]; then read -p "CLApp has an update available! Install? " yn; echo "Updating CLApp..."; $(find ~ -type d -name clapp)/install; fi
+if [[ `diff $(find ~ -type d -name clapp)/.clapp ~/.clapp` || `diff $(find ~ -type d -name clapp)/clapp ~/bin/clapp` ]]; then read -p "CLApp has an update available! Install? " yn; if [[ "${yn,}" =~ 'y' ]]; then echo "Updating CLApp..."; `find ~ -type d -name clapp`/install; fi; fi
 
 # Load lib
 . ~/.clapp/.lib
