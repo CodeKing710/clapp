@@ -6,7 +6,7 @@ s_apptype="sh"
 s_apploc="`pwd`/$s_appname"
 __srced="$s_appname"
 declare -A s_appopts
-s_usercwd=`pwd`
+__cwd=`pwd`
 __errtxt='echo -e ''\e[0;1;31m[ERROR] '
 __systxt='echo -e ''\e[0;1;36m[CLApp]\e[0;0;0m '
 __devtxt='echo -e ''\e[0;1;95m[CLAppDev]\e[0;0;0m '
