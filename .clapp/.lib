@@ -7,7 +7,7 @@ s_apploc="`pwd`/$s_appname"
 __srced="$s_appname"
 declare -A s_appopts
 __cwd=`pwd`
-__errtxt='echo -e ''\e[0;1;31m[ERROR] '
+__errtxt='echo -e ''\e[0;1;31m[ERROR]\e[0;0;0m '
 __systxt='echo -e ''\e[0;1;36m[CLApp]\e[0;0;0m '
 __devtxt='echo -e ''\e[0;1;95m[CLAppDev]\e[0;0;0m '
 
@@ -59,9 +59,62 @@ __gsopts() {
 
 # Functionality
 __mknode() {
-  [[ `command -v npm || command -v node` ]] && $__errtxt"NodeJS Not Installed!" && exit
-  __opts
+  [[ `command -v npm || command -v node` ]] || ( $__errtxt"NodeJS Not Installed!" && exit )
+  __opts # Process general options
 
+  # Process Node-specific options
+  # web: process string to respective packages
+  # Slot 1: Mongo (M), MySQL (S), MS-SQL (s), PostgreSQL (P), None (N)
+  # Slot 2: Express (E), Node (N)
+  # Slot 3: React (R), Angular (A), EJS (E), Jade (J), HTML (H)
+  local pkginstallstr="" # Dynamically built to ensure project setup is handled by node and not by clapp
+  local viewext=".html"
+  procstr() {
+    local db="${1:0:1}"
+    local proc="${1:1:1}"
+    local tmpeng="${1:2:1}"
+    [ $__DEV ] && $__devtxt"db: $db"
+    [ $__DEV ] && $__devtxt"proc: $proc"
+    [ $__DEV ] && $__devtxt"tmpeng: $tmpeng"
+    case $db in
+      M )
+        pkginstallstr="${pkginstallstr}mongoose "
+        ;;
+      S | P | s )
+        pkginstallstr="${pkginstallstr}sequelize "
+        ;;
+    esac
+    case $proc in
+      E )
+        pkginstallstr="${pkginstallstr}express cookie-parser "
+        ;;
+    esac
+    case $tmpeng in
+      R )
+        [ "$proc" = "E" ] && pkginstallstr="${pkginstallstr}react express-react-views " || pkginstallstr="${pkginstallstr}react "
+        viewext=".jsx"
+        ;;
+      A )
+        pkginstallstr="${pkginstallstr}angular "
+        ;;
+      E )
+        pkginstallstr="${pkginstallstr}ejs "
+        viewext=".ejs"
+        ;;
+      J )
+        pkginstallstr="${pkginstallstr}jade "
+        viewext=".jade"
+        ;;
+    esac
+  }
+  procstr "${s_appopts[style]}"
+  [ ! -z "$pkginstallstr" ] && pkginstallstr="npm i $pkginstallstr"
+
+  # Begin setup of node project directory
+  cd "$s_apploc"
+  echo -e "" >> index.js
+  npm init -y >>/dev/null
+  [ ! -z "$pkginstallstr" ] && echo "Installing packages..." && ( $pkginstallstr )>>/dev/null && echo "Packages installed!"
 }
 __mkpy() {
   [[ `command -v python || command -v python3` ]] && $__errtxt"Python Not Installed!" && exit
@@ -188,9 +241,6 @@ __opts() {
       repo )
         cd "$s_apploc" && git init >>/dev/null && echo "# $s_appname" >> readme.md
         cd $s_usercwd
-        ;;
-      * )
-        $__errtxt"Not an option!"
         ;;
     esac
   done
