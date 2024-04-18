@@ -3,8 +3,8 @@
 # Funcs and vars
 s_appname="my_app"
 s_apptype="sh"
-s_apploc="`pwd`/$s_appname"
-__srced="$s_appname"
+s_apploc="`pwd`/${s_appname,,}"
+__srced="${s_appname,,}"
 declare -A s_appopts
 __cwd=`pwd`
 __errtxt='echo -e ''\e[0;1;31m[ERROR]\e[0;0;0m '
@@ -24,14 +24,14 @@ __gsname() {
     echo "$s_appname"
   else
     s_appname="$1"
-    s_apploc="`pwd`/$s_appname"
+    s_apploc="`pwd`/${s_appname,,}"
   fi
 }
 __gsloc() {
   if [ -z "$1" ]; then
     echo "$s_apploc"
   else
-    s_apploc="$1/$s_appname"
+    s_apploc="$1/${s_appname,,}"
   fi
 }
 __gsopts() {
@@ -162,21 +162,21 @@ LIB
 # $s_appname's main code
 
 # Check for updates
-[ ! -d ~/.$s_appname ] && \\\$(find ~ -type d -name $__srced)/install
-if [[ \\\`diff \\\$(find ~ -type d -name $__srced)/.$s_appname ~/.$s_appname\\\` ]]; then echo "Updating $s_appname..."; \\\$(find ~ -type d -name $__srced)/install; fi
+[ ! -d ~/.${s_appname,,} ] && \\\$(find ~ -type d -name $__srced)/install
+if [[ \\\`diff \\\$(find ~ -type d -name $__srced)/.${s_appname,,} ~/.${s_appname,,}\\\` ]]; then echo "Updating ${s_appname,,}..."; \\\$(find ~ -type d -name $__srced)/install; fi
 
 # Load lib
-source ~/.$s_appname/.lib
+source ~/.${s_appname,,}/.lib
 
-__$s_appname() {
+__${s_appname,,}() {
   __args \\\$@
   # Write your app's main flow here (General stub supports arg handling)
 }
 
-__$s_appname \\\$@
+__${s_appname,,} \\\$@
 
 # Cleanup for accidental sourcing
-unset __$s_appname __args __cwd
+unset __${s_appname,,} __args __cwd
 APP
   `
   local installfile=`cat <<-INS
@@ -197,16 +197,16 @@ INS
   if [ ${s_appopts[allone]} ]; then
     touch "$s_apploc/version"
     touch "$s_apploc/help"
-    echo -e "#!/bin/bash\n\n$libfile\n$appfile" >> "$s_apploc/$s_appname"
-    chmod u+x "$s_apploc/$s_appname"
+    echo -e "#!/bin/bash\n\n$libfile\n$appfile" >> "$s_apploc/${s_appname,,}"
+    chmod u+x "$s_apploc/${s_appname,,}"
   else
-    mkdir "$s_apploc/.$s_appname"
-    touch "$s_apploc/.$s_appname/version"
-    touch "$s_apploc/.$s_appname/help"
-    echo -e "#!/bin/bash\n\n$libfile" >> "$s_apploc/.$s_appname/.lib"
-    echo -e "#!/bin/bash\n\n$appfile" >> "$s_apploc/$s_appname"
-    chmod u+x "$s_apploc/.$s_appname/.lib"
-    chmod u+x "$s_apploc/$s_appname"
+    mkdir "$s_apploc/.${s_appname,,}"
+    touch "$s_apploc/.${s_appname,,}/version"
+    touch "$s_apploc/.${s_appname,,}/help"
+    echo -e "#!/bin/bash\n\n$libfile" >> "$s_apploc/.${s_appname,,}/.lib"
+    echo -e "#!/bin/bash\n\n$appfile" >> "$s_apploc/${s_appname,,}"
+    chmod u+x "$s_apploc/.${s_appname,,}/.lib"
+    chmod u+x "$s_apploc/${s_appname,,}"
   fi
 
   # Generate install file
@@ -225,7 +225,7 @@ __opts() {
   # Begin generating folders and files
   [ -d "$s_apploc" ] && $__errtxt"App with that name already exists!" && exit
 
-  __srced=`[ ${s_appopts[src]} ] && echo $s_appname/src || echo $s_appname`
+  __srced=`[ ${s_appopts[src]} ] && echo ${s_appname,,}/src || echo ${s_appname,,}`
   $__systxt"Generating $s_appname in location $s_apploc..."
   [ $__DEV ] && ( $__devtxt"Options: "; __gsopts )
   mkdir "$s_apploc"
@@ -240,6 +240,7 @@ __opts() {
         ;;
       repo )
         cd "$s_apploc" && git init >>/dev/null && echo "# $s_appname" >> readme.md
+        $__systxt"Initialized app as repo! Don't forget to run \`git commit -a -m \"Creation of $s_appname!\"\`"
         cd $s_usercwd
         ;;
     esac
