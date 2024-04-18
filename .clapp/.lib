@@ -148,7 +148,7 @@ __cwd=\\\`pwd\\\`
 __args() {
   # Process args
   while [[ "\\\$1" =~ '-' ]]; do
-    # ALL CASE STATEMENT OPTIONS SHOULD END WITH 'exit;;'!!
+    # ALL CASE STATEMENT OPTIONS SHOULD END WITH 'exit;;' in this function!!
     case "\\\$1" in
       * ) # Catch-all
         echo "\\"\\\$1\\" is not an argument!"
@@ -185,8 +185,8 @@ APP
 # $s_appname's installer
 install() {
   local repo=\\\$(find ~ -type d -name $__srced)
-  cp \\\$repo/$s_appname ~/bin || return false
-  cp -r \\\$repo/.$s_appname ~ || return false
+  cp \\\$repo/${s_appname,,} ~/bin || return false
+  cp -r \\\$repo/.${s_appname,,} ~ || return false
   echo "$s_appname installed!"
 }
 
@@ -195,13 +195,13 @@ INS
   `
   # Generate based on all-in-one
   if [ ${s_appopts[allone]} ]; then
-    touch "$s_apploc/version"
+    echo "${s_appname}v1.0.0" >> "$s_apploc/version"
     touch "$s_apploc/help"
     echo -e "#!/bin/bash\n\n$libfile\n$appfile" >> "$s_apploc/${s_appname,,}"
     chmod u+x "$s_apploc/${s_appname,,}"
   else
     mkdir "$s_apploc/.${s_appname,,}"
-    touch "$s_apploc/.${s_appname,,}/version"
+    echo "${s_appname}v1.0.0" >> "$s_apploc/.${s_appname,,}/version"
     touch "$s_apploc/.${s_appname,,}/help"
     echo -e "#!/bin/bash\n\n$libfile" >> "$s_apploc/.${s_appname,,}/.lib"
     echo -e "#!/bin/bash\n\n$appfile" >> "$s_apploc/${s_appname,,}"
