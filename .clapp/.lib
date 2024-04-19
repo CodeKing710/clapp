@@ -162,11 +162,11 @@ LIB
 # $s_appname's main code
 
 # Check for updates
-[ ! -d ~/.${s_appname,,} ] && \\\$(find ~ -type d -name $__srced)/install
-if [[ \\\`diff \\\$(find ~ -type d -name $__srced)/.${s_appname,,} ~/.${s_appname,,}\\\` ]]; then echo "Updating ${s_appname,,}..."; \\\$(find ~ -type d -name $__srced)/install; fi
+[ ! -d \\\$HOME/.${s_appname,,} ] && \\\$(find \\\$HOME -type d -name $__srced)/install
+if [[ \\\`diff \\\$(find \\\$HOME -type d -name $__srced)/.${s_appname,,} \\\$HOME/.${s_appname,,}\\\` ]]; then echo "Updating ${s_appname,,}..."; \\\$(find \\\$HOME -type d -name $__srced)/install; fi
 
 # Load lib
-source ~/.${s_appname,,}/.lib
+source \\\$HOME/.${s_appname,,}/.lib
 
 __${s_appname,,}() {
   __args \\\$@
@@ -184,9 +184,9 @@ APP
 
 # $s_appname's installer
 install() {
-  local repo=\\\$(find ~ -type d -name $__srced)
-  cp \\\$repo/${s_appname,,} ~/bin || return false
-  cp -r \\\$repo/.${s_appname,,} ~ || return false
+  local repo=\\\$(find \\\$HOME -type d -name $__srced)
+  cp \\\$repo/${s_appname,,} \\\$HOME/bin || return false
+  cp -r \\\$repo/.${s_appname,,} \\\$HOME || return false
   echo "$s_appname installed!"
 }
 
@@ -195,13 +195,13 @@ INS
   `
   # Generate based on all-in-one
   if [ ${s_appopts[allone]} ]; then
-    echo "${s_appname}v1.0.0" >> "$s_apploc/version"
+    echo "${s_appname} - v1.0.0" >> "$s_apploc/version"
     touch "$s_apploc/help"
     echo -e "#!/bin/bash\n\n$libfile\n$appfile" >> "$s_apploc/${s_appname,,}"
     chmod u+x "$s_apploc/${s_appname,,}"
   else
     mkdir "$s_apploc/.${s_appname,,}"
-    echo "${s_appname}v1.0.0" >> "$s_apploc/.${s_appname,,}/version"
+    echo "${s_appname} - v1.0.0" >> "$s_apploc/.${s_appname,,}/version"
     touch "$s_apploc/.${s_appname,,}/help"
     echo -e "#!/bin/bash\n\n$libfile" >> "$s_apploc/.${s_appname,,}/.lib"
     echo -e "#!/bin/bash\n\n$appfile" >> "$s_apploc/${s_appname,,}"
