@@ -112,7 +112,7 @@ __mknode() {
 
   # Begin setup of node project directory
   cd "$s_apploc"
-  echo -e "" >> index.js
+  echo -e "#!/bin/env node" >> index.js
   npm init -y >>/dev/null
   [ ! -z "$pkginstallstr" ] && echo "Installing packages..." && ( $pkginstallstr )>>/dev/null && echo "Packages installed!"
 }
@@ -143,6 +143,7 @@ __mksh() {
 
 # Vars
 __cwd=\\\`pwd\\\`
+prgroot="\\\$HOME/.${s_appname,,}"
 
 # Funcs
 __args() {
@@ -150,7 +151,14 @@ __args() {
   while [[ "\\\$1" =~ '-' ]]; do
     # ALL CASE STATEMENT OPTIONS SHOULD END WITH 'exit;;' in this function!!
     case "\\\$1" in
+      -h | --help )
+        cat \\\$prgroot/help
+        exit;;
+      -v | --version )
+        cat \\\$prgroot/version
+        exit;;
       * ) # Catch-all
+        cat \\\$prgroot/help | head -1
         echo "\\"\\\$1\\" is not an argument!"
         exit;;
     esac
@@ -161,15 +169,24 @@ LIB
   local appfile=`cat <<-APP
 # $s_appname's main code
 
-# Check for updates
-[ ! -d \\\$HOME/.${s_appname,,} ] && \\\$(find \\\$HOME -type d -name $__srced)/install
-if [[ \\\`diff \\\$(find \\\$HOME -type d -name $__srced)/.${s_appname,,} \\\$HOME/.${s_appname,,}\\\` ]]; then echo "Updating ${s_appname,,}..."; \\\$(find \\\$HOME -type d -name $__srced)/install; fi
+# Check for unit test
+if [ \\\$${s_appname^^}_TST ]; then
+  # Load the lib from the repo and set prgroot to repo
+  echo -e "[${s_appname^^}] UNIT TEST MODE! READING FROM REPO!"
+  source \\\`find \\\$HOME -type d -name ${s_appname,,}\\\`/.${s_appname,,}/.lib
+  prgroot="\\\`find \\\$HOME -type d -name ${s_appname,,}\\\`/.${s_appname,,}"
+else
+  # Check for updates
+  [ ! -d \\\$HOME/.${s_appname,,} ] && \\\$(find \\\$HOME -type d -name $__srced)/install
+  if [[ \\\`diff \\\$(find \\\$HOME -type d -name $__srced)/.${s_appname,,} \\\$HOME/.${s_appname,,}\\\` ]]; then echo "Updating ${s_appname,,}..."; \\\$(find \\\$HOME -type d -name $__srced)/install; fi
+  
+  # Load lib
+  source \\\$HOME/.${s_appname,,}/.lib
+fi
 
-# Load lib
-source \\\$HOME/.${s_appname,,}/.lib
 
 __${s_appname,,}() {
-  __args \\\$@
+  [ -z "$1" ] && args -h || __args \\\$@
   # Write your app's main flow here (General stub supports arg handling)
 }
 
@@ -202,7 +219,7 @@ INS
   else
     mkdir "$s_apploc/.${s_appname,,}"
     echo "${s_appname} - v1.0.0" >> "$s_apploc/.${s_appname,,}/version"
-    touch "$s_apploc/.${s_appname,,}/help"
+    echo "Usage: ${s_appname,,} [options] <args>" >> "$s_apploc/.${s_appname,,}/help"
     echo -e "#!/bin/bash\n\n$libfile" >> "$s_apploc/.${s_appname,,}/.lib"
     echo -e "#!/bin/bash\n\n$appfile" >> "$s_apploc/${s_appname,,}"
     chmod u+x "$s_apploc/.${s_appname,,}/.lib"
