@@ -173,8 +173,8 @@ LIB
 if [ \\\$${s_appname^^}_TST ]; then
   # Load the lib from the repo and set prgroot to repo
   echo -e "[${s_appname^^}] UNIT TEST MODE! READING FROM REPO!"
-  source \\\`find \\\$HOME -type d -name ${s_appname,,}\\\`/.${s_appname,,}/.lib
-  prgroot="\\\`find \\\$HOME -type d -name ${s_appname,,}\\\`/.${s_appname,,}"
+  source \\\`find \\\$HOME -type d -name $__srced\\\`/.${s_appname,,}/.lib
+  prgroot="\\\`find \\\$HOME -type d -name $__srced\\\`/.${s_appname,,}"
 else
   # Check for updates
   [ ! -d \\\$HOME/.${s_appname,,} ] && \\\$(find \\\$HOME -type d -name $__srced)/install
