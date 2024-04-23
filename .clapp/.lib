@@ -162,7 +162,7 @@ __args() {
         echo "\\"\\\$1\\" is not an argument!"
         exit;;
     esac
-  done
+  shift; done
 }
 LIB
   `
