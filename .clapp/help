@@ -1,13 +1,22 @@
-Usage: clapp [-h|--help|-v|--version] [-t|---type] <bash|node|python> [-n|--name] <appname> [-l|--location] <applocation>
+Usage: clapp <-n> <appname> [-t] <bash|node|python> [-l] <applocation> [-o ...]
 
 Options:
 
-    -t | --type  -  Sets the type of app clapp will make
+  -t | --type       Sets the type of app clapp will make
 
-    -n | --name  -  Sets the name of the app (Used for app metadata as well)
+  -n | --name       Sets the name of the app (Used for app metadata as well)
 
-    -l | --location  - Sets the path/location of the app
+  -l | --location   Sets the path/location of the app
+
+  -o | --options    Sets the options for the app.
+                    Available Options:
+
+  -V | --verbose    Detailed output on CLApp's operations
+
+  -u | --update     For updating CLApp if you have auto-update disabled,
+                    or to ensure CLApp is up to date before continuing use
+                    since it will only run updates then exit
     
-    -h | --help  -  Shows this page
+  -h | --help       Shows this page
 
-    -v | --version  -  Shows current version of clapp
+  -v | --version    Shows current version of clapp

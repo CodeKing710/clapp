@@ -11,6 +11,9 @@
 
 - Convert some defaults to settings
 - Add ability to read, edit, and list settings
+- Support for code that loads settings within the generated app (bash focus)
+- Add option to use new handoff-arglist style of arg parsing (bash)
+- Reogranize CLApp so it's more like the apps that it generates instead of being a mess
 
 # Bugs
 ## Key:
