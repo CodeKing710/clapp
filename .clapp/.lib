@@ -294,14 +294,14 @@ __args() {
         fi
         ;;
       -h | --help )
-        echo "`cat ~/.clapp/help`"
+        echo "`cat $HOME/.clapp/help`"
         exit;;
       -v | --version )
-        echo "`cat ~/.clapp/version`"
+        echo "`cat $HOME/.clapp/version`"
         exit;;
       -u | --update )
         # Clapp does this by default, this ensures clapp doesn't continue execution
-        [[ `diff ~/bin/clapp $(find ~ -type d -name clapp)/clapp` ]] || $__systxt"CLApp up to date!"
+        [[ `diff $HOME/bin/clapp $(find $HOME -type d -name clapp)/clapp` ]] || $__systxt"CLApp up to date!"
         exit;;
       # --docs )
       #   ;;

@@ -2,9 +2,9 @@
 
 # Install script for clapp
 install() {
-  local repo=$(find ~ -type d -name clapp)
-  cp $repo/clapp ~/bin || return
-  cp -r $repo/.clapp ~ || return
+  local repo=$(find $HOME -type d -name clapp)
+  cp $repo/clapp $HOME/bin || return
+  cp -r $repo/.clapp $HOME || return
   # echo -e "\e[0;1;36m[CLApp]\e[0;0;0m CLApp installed!"
 }
 

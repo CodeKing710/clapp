@@ -1,26 +1,27 @@
 #!/bin/bash
 
-# mkapp - generates folder and file structures for applications of various types
-#
+# CLApp
+# Generates folder and file structures for CLI-apps
+
 # Currently supported:
 #  - Bash
 #  - Node Web App (Various options)
 #  - Python Web App (Flask, Django)
-#  - 
+#
 
 # Check for updates to the repo
-if [[ `diff $(find ~ -type d -name clapp)/.clapp ~/.clapp` || `diff $(find ~ -type d -name clapp)/clapp ~/bin/clapp` ]]; then read -p "CLApp has an update available! Install? " yn; if [[ "${yn,}" =~ 'y' ]]; then echo "Updating CLApp..."; `find ~ -type d -name clapp`/install; fi; fi
+if [[ `diff $(find $HOME -type d -name clapp)/.clapp $HOME/.clapp` || `diff $(find $HOME -type d -name clapp)/clapp $HOME/bin/clapp` ]]; then read -p "CLApp has an update available! Install? " yn; if [[ "${yn,}" =~ 'y' ]]; then echo "Updating CLApp..."; `find $HOME -type d -name clapp`/install; fi; fi
 
 # Load lib
-. ~/.clapp/.lib
+. $HOME/.clapp/.lib
 
 # Main container
-__mkapp() {
+clapp() {
   # Set prog states or list usage since this cannot run without args
   if [ ! -z "$1" ]; then
     __args $@
   else
-    echo "`cat ~/.clapp/help | head -1`"
+    echo "`cat $HOME/.clapp/help | head -1`"
     return
   fi
 
@@ -43,7 +44,7 @@ __mkapp() {
 }
 
 # Run container
-__mkapp $@
+clapp $@
 
 # Cleanup when sourced (should not be sourced!)
-unset __mkapp __args __mknode __mkpy __mksh __opts __gstype __gsname __gsloc __gsopts __errtxt __systxt __devtxt __cwd __srced s_appname s_apptype s_apploc s_appopts
+unset clapp __args __mknode __mkpy __mksh __opts __gstype __gsname __gsloc __gsopts __errtxt __systxt __devtxt __cwd __srced s_appname s_apptype s_apploc s_appopts

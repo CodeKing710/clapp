@@ -14,6 +14,7 @@
 - Support for code that loads settings within the generated app (bash focus)
 - Add option to use new handoff-arglist style of arg parsing (bash)
 - Reogranize CLApp so it's more like the apps that it generates instead of being a mess
+- Convert '~' to $HOME so that it works on all platforms
 
 # Bugs
 ## Key:
