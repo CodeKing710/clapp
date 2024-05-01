@@ -6,12 +6,12 @@
 - Support for making Node apps
 - Built-in unit test code for each type of app
 - Auto updates
+- Settings!
 
 # What's Next
 
-- Reogranize CLApp so it's more like the apps that it generates instead of being a mess
+- Move file heredocs to variables outside of the function (will allow proper folding and use less cpu at the cost of more RAM)
 - Convert some defaults to settings
-- Add ability to read, edit, and list settings
 - Support for code that loads settings within the generated app (bash focus)
 - Add option to use new handoff-arglist style of arg parsing (bash)
 
