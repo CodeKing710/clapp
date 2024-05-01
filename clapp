@@ -21,7 +21,7 @@ if [[ $CLAPP_TST ]]; then
 elif [[ $autoupdate ]]; then
   # Check for updates
   [ ! -d $HOME/.clapp ] && $repo/install
-  if [[ `diff $repo/.clapp/.lib $HOME/.clapp/.lib` || `diff $repo/.clapp/version $HOME/.clapp/version` || `diff $repo/.clapp/help $HOME/.clapp/help` ]]; then echo "Update found!"; $repo/install; fi
+  if [[ `diff $repo/.clapp/.lib $HOME/.clapp/.lib` || `diff $repo/.clapp/version $HOME/.clapp/version` || `diff $repo/.clapp/help $HOME/.clapp/help` || `diff $repo/clapp $HOME/bin/clapp` ]]; then echo "Update found! Installing..."; $repo/install; fi
 
   # Load lib
   source $HOME/.clapp/.lib
@@ -31,14 +31,14 @@ fi
 
 # Main container
 clapp() {
-  # Set prog states or list usage since this cannot run without args
-  if [ ! -z "$1" ]; then
-    __args $@
-  else
+  if [ -z "$1" ]; then
     echo "`cat $HOME/.clapp/help | head -1`"
     return
   fi
 
+  # Set prog states or list usage since this cannot run without args
+  __args $@
+  
   # Parse states into respective apps
   case "${s_apptype,}" in
     n | node )

@@ -11,6 +11,9 @@ __cwd=`pwd`
 __errtxt='echo -e ''\e[0;1;31m[ERROR]\e[0;0;0m '
 __systxt='echo -e ''\e[0;1;36m[CLApp]\e[0;0;0m '
 __devtxt='echo -e ''\e[0;1;95m[CLAppDev]\e[0;0;0m '
+declare -A pyfiles
+declare -A jsfiles
+declare -A shfiles
 
 __loadcfg() {
   local cfg="$prgroot/.cfg"

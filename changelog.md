@@ -22,4 +22,4 @@
 **O=Outstanding**
 **D=Deleted**
 
-- CB000000 [R]: None so far (Exciting!)
+- CB000000 [O]: Auto-update sometimes results in unexpected code being run or app crashing errors to be thrown, only use if you are sure you can reverse the operation!
