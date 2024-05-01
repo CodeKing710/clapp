@@ -10,10 +10,29 @@
 #
 
 # Check for updates to the repo
-if [[ `diff $(find $HOME -type d -name clapp)/.clapp $HOME/.clapp` || `diff $(find $HOME -type d -name clapp)/clapp $HOME/bin/clapp` ]]; then read -p "CLApp has an update available! Install? " yn; if [[ "${yn,}" =~ 'y' ]]; then echo "Updating CLApp..."; `find $HOME -type d -name clapp`/install; fi; fi
+# if [[ `diff $(find $HOME -type d -name clapp)/.clapp $HOME/.clapp` || `diff $(find $HOME -type d -name clapp)/clapp $HOME/bin/clapp` ]]; then read -p "CLApp has an update available! Install? " yn; if [[ "${yn,}" =~ 'y' ]]; then echo "Updating CLApp..."; `find $HOME -type d -name clapp`/install; fi; fi
 
 # Load lib
-. $HOME/.clapp/.lib
+# . $HOME/.clapp/.lib
+autoupdate=`cat $HOME/.bsm/.cfg | grep 'autoup' | cut -d '=' -f2`
+repo=$(find $HOME -type d -name clapp)
+
+# Check for unit test
+if [[ $CLAPP_TST ]]; then
+  # Load the lib from the repo and set prgroot to repo
+  echo -e "UNIT TEST MODE! READING FROM REPO!"
+  source $repo/.clapp/.lib
+  prgroot="$repo/.clapp"
+elif [[ $autoupdate ]]; then
+  # Check for updates
+  [ ! -d $HOME/.clapp ] && $repo/install
+  if [[ `diff $repo/.clapp/.lib $HOME/.clapp/.lib` || `diff $repo/.clapp/version $HOME/.clapp/version` || `diff $repo/.clapp/help $HOME/.clapp/help` ]]; then echo "Update found!"; $repo/install; fi
+
+  # Load lib
+  source $HOME/.clapp/.lib
+else
+  source $HOME/.clapp/.lib
+fi
 
 # Main container
 clapp() {
@@ -47,4 +66,4 @@ clapp() {
 clapp $@
 
 # Cleanup when sourced (should not be sourced!)
-unset clapp __args __mknode __mkpy __mksh __opts __gstype __gsname __gsloc __gsopts __errtxt __systxt __devtxt __cwd __srced s_appname s_apptype s_apploc s_appopts
+unset clapp __args __mknode __mkpy __mksh __opts __gstype __gsname __gsloc __gsopts __errtxt __systxt __devtxt __cwd __srced s_appname s_apptype s_apploc s_appopts autoupdate repo
