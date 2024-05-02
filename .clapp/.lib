@@ -236,9 +236,7 @@ INS
   `
   # Generate based on all-in-one
   if [ ${s_appopts[allone]} ]; then
-    echo "${s_appname} - v1.0.0" >> "$s_apploc/version"
-    touch "$s_apploc/help"
-    echo -e "#!/bin/bash\n\n$libfile\n$appfile" >> "$s_apploc/${s_appname,,}"
+    echo -e "#!/bin/bash\n\nversion=\"${s_appname} - v1.0.0\"\nhelp=\"\"\n\n$libfile\n$appfile\nunset version help" >> "$s_apploc/${s_appname,,}"
     chmod u+x "$s_apploc/${s_appname,,}"
   else
     mkdir "$s_apploc/.${s_appname,,}"
