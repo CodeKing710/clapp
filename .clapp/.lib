@@ -210,7 +210,7 @@ fi
 
 
 __${s_appname,,}() {
-  [ -z "$1" ] && __args -h || __args \\\$@
+  [ -z "\\\$1" ] && __args -h || __args \\\$@
   # Write your app's main flow here (General stub supports arg handling)
 }
 
