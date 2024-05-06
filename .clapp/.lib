@@ -226,12 +226,12 @@ APP
 # $s_appname's installer
 install() {
   local repo=\\\$(find \\\$HOME -type d -name $__srced)
-  cp \\\$repo/${s_appname,,} \\\$HOME/bin || return false
-  cp -r \\\$repo/.${s_appname,,} \\\$HOME || return false
+  cp \\\$repo/${s_appname,,} \\\$HOME/bin || return
+  cp -r \\\$repo/.${s_appname,,} \\\$HOME || return
   echo "$s_appname installed!"
 }
 
-install || echo "Install failed!"
+install
 INS
   `
   # Generate based on all-in-one
