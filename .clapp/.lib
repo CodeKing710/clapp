@@ -118,13 +118,12 @@ __mknode() {
     esac
   }
   procstr "${s_appopts[style]}"
-  [ ! -z "$pkginstallstr" ] && pkginstallstr="npm i $pkginstallstr"
 
   # Begin setup of node project directory
   cd "$s_apploc"
-  echo -e "#!/bin/env node" >> index.js
+  echo -e "#!/bin/env node\n\n$__JSAPP" >> index.js
   npm init -y >>/dev/null
-  [ ! -z "$pkginstallstr" ] && echo "Installing packages..." && ( $pkginstallstr )>>/dev/null && echo "Packages installed!"
+  [ ! -z "$pkginstallstr" ] && echo "Installing packages..." && ( npm i $pkginstallstr )>>/dev/null && echo "Packages installed!"
 }
 __mkpy() {
   [[ `command -v python || command -v python3` ]] && $__errtxt"Python Not Installed!" && exit
@@ -204,23 +203,22 @@ __args() {
     case $1 in
       -t | --type )
         shift
-        # [ __DEV ] && $__devtxt"Setting app type to $1"
+        [ __DEV ] && $__devtxt"Setting app type to $1"
         [ ! -z "$1" ] && __gstype "$1" || ( $__errtxt"Must supply value to argument!"; exit )
         ;;
       -n | --name )
         shift
-        # [ __DEV ] && $__devtxt"Setting app name to $1"
+        [ __DEV ] && $__devtxt"Setting app name to $1"
         [ ! -z "$1" ] && __gsname "$1" || ( $__errtxt"Must supply value to argument!"; exit )
         ;;
       -l | --location )
         shift
-        # [ __DEV ] && $__devtxt"Setting app location to $1"
+        [ __DEV ] && $__devtxt"Setting app location to $1"
         [ ! -z "$1" ] && __gsloc "$1" || ( $__errtxt"Must supply value to argument!"; exit )
         ;;
       -o | --options )
         # This should be last, otherwise the function may fail, make sure next 2 args are options
-        shift;
-        # echo "$@"
+        shift
         if [[ "$1" =~ "=" ]]; then
           __gsopts "$@"
         else

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+__JSAPP=`cat <<-APP
+(async function() {
+  // Write code here
+})();
+APP
+`
