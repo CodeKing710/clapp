@@ -1,6 +1,6 @@
 #!/bin/bash
 # SOURCE THIS FILE FOR HEREDOC INTERPOLATION
-__SHINSTALL=`cat <<-HDF
+__SHINSTALL=`cat <<-INST
 #!/bin/bash
 
 # $s_appname's installer
@@ -12,5 +12,5 @@ install() {
 }
 
 install
-HDF
+INST
 `

@@ -133,7 +133,7 @@ __mkpy() {
   source "$py_assets/main.hdf" # __PYAPP
   touch "$s_apploc/version"
   touch "$s_apploc/help"
-  echo -e "$main" >> "$s_apploc/$s_appname.py"
+  echo -e "$__PYAPP" >> "$s_apploc/$s_appname.py"
   chmod u+x "$s_apploc/$s_appname"
 
   # If we got here, we succeeded
