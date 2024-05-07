@@ -1,0 +1,16 @@
+#!/bin/bash
+# SOURCE THIS FILE FOR HEREDOC INTERPOLATION
+__SHINSTALL=`cat <<-HDF
+#!/bin/bash
+
+# $s_appname's installer
+install() {
+  local repo=\\\$(find \\\$HOME -type d -name $__srced)
+  cp \\\$repo/${s_appname,,} \\\$HOME/bin || return
+  cp -r \\\$repo/.${s_appname,,} \\\$HOME || return
+  echo "$s_appname installed!"
+}
+
+install
+HDF
+`

@@ -1,0 +1,26 @@
+#!/bin/bash
+# SOURCE THIS FILE FOR HEREDOC INTERPOLATION
+
+source "$sh_assets/args.hdf"
+
+# Choose args function based on parent existence of '$ALTARGFUNC'
+__SHLIB=`cat <<-HDF
+# $s_appname's Functions and Variables
+
+# Vars
+__cwd=\\\`pwd\\\`
+prgroot="\\\$HOME/.${s_appname,,}"
+
+# Config
+__loadcfg() {
+  local cfg="\\\$prgroot/.cfg"
+  editor=\\\`cat \\\$cfg | grep 'editor' | cut -d '=' -f2\\\`
+  defaulttype=\\\`cat \\\$cfg | grep 'defaulttype' | cut -d '=' -f2\\\`
+}
+# Config vars will be set via function in-case of needing reloaded
+__loadcfg
+
+# Funcs
+`[[ $ALTARGFUNC ]] && $__SHARG2 || $__SHARG`
+HDF
+`

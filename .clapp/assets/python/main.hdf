@@ -1,0 +1,8 @@
+#!/bin/bash
+
+__PYAPP=`cat <<-HDF
+#!/bin/env python
+
+# $s_appname - Does things and stuff
+HDF
+`

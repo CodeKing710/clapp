@@ -2,6 +2,9 @@
 
 # Funcs and vars
 prgroot="$HOME/.clapp"
+sh_assets="$prgroot/assets/bash"
+js_assets="$prgroot/assets/node"
+py_assets="$prgroot/assets/python"
 s_appname="my_app"
 s_apptype="sh"
 s_apploc="`pwd`/${s_appname,,}"
@@ -11,9 +14,6 @@ __cwd=`pwd`
 __errtxt='echo -e ''\e[0;1;31m[ERROR]\e[0;0;0m '
 __systxt='echo -e ''\e[0;1;36m[CLApp]\e[0;0;0m '
 __devtxt='echo -e ''\e[0;1;95m[CLAppDev]\e[0;0;0m '
-declare -A pyfiles
-declare -A jsfiles
-declare -A shfiles
 
 __loadcfg() {
   local cfg="$prgroot/.cfg"
@@ -130,12 +130,7 @@ __mkpy() {
   [[ `command -v python || command -v python3` ]] && $__errtxt"Python Not Installed!" && exit
   __opts
 
-  local main=`cat <<-MAIN
-#!/bin/env python
-
-# $s_appname - Does things and stuff
-MAIN
-  `
+  source "$py_assets/main.hdf" # __PYAPP
   touch "$s_apploc/version"
   touch "$s_apploc/help"
   echo -e "$main" >> "$s_apploc/$s_appname.py"
@@ -148,108 +143,26 @@ MAIN
 __mksh() {
   __opts # Process app options and properties
   
-  local libfile=`cat <<-LIB
-# $s_appname's Functions and Variables
-
-# Vars
-__cwd=\\\`pwd\\\`
-prgroot="\\\$HOME/.${s_appname,,}"
-
-# Config
-__loadcfg() {
-  local cfg="\\\$prgroot/.cfg"
-  editor=\\\`cat \\\$cfg | grep 'editor' | cut -d '=' -f2\\\`
-  defaulttype=\\\`cat \\\$cfg | grep 'defaulttype' | cut -d '=' -f2\\\`
-}
-# Config vars will be set via function in-case of needing reloaded
-__loadcfg
-
-# Funcs
-__args() {
-  # Process args
-  while [[ "\\\$1" =~ '-' ]]; do
-    # ALL CASE STATEMENT OPTIONS SHOULD END WITH 'exit;;' in this function!!
-    case "\\\$1" in
-      -h | --help )
-        cat \\\$prgroot/help
-        exit;;
-      -v | --version )
-        cat \\\$prgroot/version
-        exit;;
-      * ) # Catch-all
-        cat \\\$prgroot/help | head -1
-        echo "\\"\\\$1\\" is not an argument!"
-        exit;;
-    esac
-  shift; done
-}
-LIB
-  `
-  local appfile=`cat <<-APP
-# $s_appname's main code
-
-autoupdate=\\\`cat \\\$HOME/.${s_appname,,}/.cfg | grep 'autoup' | cut -d '=' -f2\\\`
-repo=\\\`find \\\$HOME -type d -name $__srced\\\`
-
-# Check for unit test
-if [ \\\$${s_appname^^}_TST ]; then
-  # Load the lib from the repo and set prgroot to repo
-  echo -e "[${s_appname^^}] UNIT TEST MODE! READING FROM REPO!"
-  source \\\$repo/.${s_appname,,}/.lib
-  prgroot="\\\$repo/.${s_appname,,}"
-elif [[ \\\$autoupdate ]]; then
-  # Check for updates
-  [ ! -d \\\$HOME/.${s_appname,,} ] && \\\$repo/install
-  if [[ \\\`diff \\\$repo/.${s_appname,,} \\\$HOME/.${s_appname,,}\\\` ]]; then echo "Updating ${s_appname,,}..."; \\\$repo/install; fi
-  
-  # Load lib
-  source \\\$HOME/.${s_appname,,}/.lib
-else
-  source \\\$HOME/.${s_appname,,}/.lib
-fi
-
-
-__${s_appname,,}() {
-  [ -z "\\\$1" ] && __args -h || __args \\\$@
-  # Write your app's main flow here (General stub supports arg handling)
-}
-
-__${s_appname,,} \\\$@
-
-# Cleanup for accidental sourcing
-unset __${s_appname,,} __args __cwd autoupdate repo
-APP
-  `
-  local installfile=`cat <<-INS
-#!/bin/bash
-
-# $s_appname's installer
-install() {
-  local repo=\\\$(find \\\$HOME -type d -name $__srced)
-  cp \\\$repo/${s_appname,,} \\\$HOME/bin || return
-  cp -r \\\$repo/.${s_appname,,} \\\$HOME || return
-  echo "$s_appname installed!"
-}
-
-install
-INS
-  `
+  # Pull HDFs (__SHINSTALL, __SHAPP, __SHLIB)
+  source "$sh_assets/install.hdf"
+  source "$sh_assets/main.hdf"
+  source "$sh_assets/lib.hdf"
   # Generate based on all-in-one
   if [ ${s_appopts[allone]} ]; then
-    echo -e "#!/bin/bash\n\nversion=\"${s_appname} - v1.0.0\"\nhelp=\"\"\n\n$libfile\n$appfile\nunset version help" >> "$s_apploc/${s_appname,,}"
+    echo -e "#!/bin/bash\n\nversion=\"${s_appname} - v1.0.0\"\nhelp=\"\"\n\n$__SHLIB\n$__SHAPP\nunset version help" >> "$s_apploc/${s_appname,,}"
     chmod u+x "$s_apploc/${s_appname,,}"
   else
     mkdir "$s_apploc/.${s_appname,,}"
     echo "${s_appname} - v1.0.0" >> "$s_apploc/.${s_appname,,}/version"
     echo "Usage: ${s_appname,,} [options] <args>" >> "$s_apploc/.${s_appname,,}/help"
-    echo -e "#!/bin/bash\n\n$libfile" >> "$s_apploc/.${s_appname,,}/.lib"
-    echo -e "#!/bin/bash\n\n$appfile" >> "$s_apploc/${s_appname,,}"
+    echo -e "#!/bin/bash\n\n$__SHLIB" >> "$s_apploc/.${s_appname,,}/.lib"
+    echo -e "#!/bin/bash\n\n$__SHAPP" >> "$s_apploc/${s_appname,,}"
     chmod u+x "$s_apploc/.${s_appname,,}/.lib"
     chmod u+x "$s_apploc/${s_appname,,}"
   fi
 
   # Generate install file
-  echo "$installfile" >> "$s_apploc/install"
+  echo "$__SHINSTALL" >> "$s_apploc/install"
   chmod u+x "$s_apploc/install"
 
   # If we got here, we succeeded

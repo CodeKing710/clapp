@@ -14,6 +14,7 @@
 - Convert some defaults to settings
 - Support for code that loads settings within the generated app (bash focus)
 - Add option to use new handoff-arglist style of arg parsing (bash)
+- Move app generation files to HereDoc Files (*.hdf)
 
 # Bugs
 ## Key:
@@ -22,4 +23,5 @@
 **O=Outstanding**
 **D=Deleted**
 
-- CB000000 [O]: Auto-update sometimes results in unexpected code being run or app crashing errors to be thrown, only use if you are sure you can reverse the operation!
+- CB000000 [R]: Auto-update sometimes results in unexpected code being run or app crashing errors to be thrown, only use if you are sure you can reverse the operation!
+                **Resolution**: If you experience issues, just run the command again, cleaning up rogue files, generally due to files not being fully copied yet and bash still parsing the app code (copy-run conflicts)
