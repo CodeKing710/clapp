@@ -21,7 +21,7 @@ if [[ $CLAPP_TST ]]; then
 elif [[ $autoupdate ]]; then
   # Check for updates
   [ ! -d $HOME/.clapp ] && $repo/install
-  if [[ `diff $repo/.clapp/.lib $HOME/.clapp/.lib` || `diff $repo/.clapp/version $HOME/.clapp/version` || `diff $repo/.clapp/help $HOME/.clapp/help` || `diff $repo/.clapp/assets $HOME/.clapp/assets` || `diff $repo/clapp $HOME/bin/clapp` ]]; then echo "Update found! Installing..."; $repo/install; fi
+  if [[ `diff $repo/.clapp/.lib $HOME/.clapp/.lib` || `diff $repo/.clapp/version $HOME/.clapp/version` || `diff $repo/.clapp/help $HOME/.clapp/help` || ! `diff $repo/.clapp/assets $HOME/.clapp/assets` =~ 'Common' || `diff $repo/clapp $HOME/bin/clapp` ]]; then echo "Update found! Installing..."; $repo/install; fi
 
   # Load lib
   source $HOME/.clapp/.lib
