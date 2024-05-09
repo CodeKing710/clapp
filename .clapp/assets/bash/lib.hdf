@@ -38,11 +38,23 @@ __args() {
     esac
   shift; done
 }
+
+error() {
+  local msg="\\\$1"
+
+  echo -e '\e[0;1;31m[ERROR]\e[0;0;0m '"\\\$msg" >&2
+}
+
+verbose() {
+  local msg="\\\$1"
+
+  echo -e '\e[0;1;35m[VERBOSE]\e[0;0;0m '"\\\$msg"
+}
 LIB
 `
 
 # Alternative
-__SHLIB2=`cat <<-LIB2
+__SHLIB2=`cat <<-2LIB
 # $s_appname's Functions and Variables
 
 # Vars
@@ -71,7 +83,7 @@ __args() {
     esac
   shift; done
 }
-LIB2
+2LIB
 `
 
 # EOF
