@@ -52,38 +52,4 @@ verbose() {
 }
 LIB
 `
-
-# Alternative
-__SHLIB2=`cat <<-2LIB
-# $s_appname's Functions and Variables
-
-# Vars
-__cwd=\\\`pwd\\\`
-prgroot="\\\$HOME/.${s_appname,,}"
-
-# Config
-__loadcfg() {
-  local cfg="\\\$prgroot/.cfg"
-  editor=\\\`cat \\\$cfg | grep 'editor' | cut -d '=' -f2\\\`
-  defaulttype=\\\`cat \\\$cfg | grep 'defaulttype' | cut -d '=' -f2\\\`
-}
-# Config vars will be set via function in-case of needing reloaded
-__loadcfg
-
-# Funcs
-__args() {
-  # Exit means arg list is not passed
-  # Return means arg list recursively passed
-  while [[ \\\$1 =~ '-' ]]; do
-    case "\\\$1" in
-      * )
-        `[[ ${s_appopts[allone]} ]] && echo 'cat $help' || echo 'cat $prgroot/help'` | head -1
-        echo "'\\\$1' is not an argument!"
-        exit;;
-    esac
-  shift; done
-}
-2LIB
-`
-
 # EOF

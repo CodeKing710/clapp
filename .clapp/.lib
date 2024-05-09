@@ -203,17 +203,17 @@ __args() {
     case $1 in
       -t | --type )
         shift
-        [ __DEV ] && $__devtxt"Setting app type to $1"
+        [ $__DEV ] && $__devtxt"Setting app type to $1"
         [ ! -z "$1" ] && __gstype "$1" || ( $__errtxt"Must supply value to argument!" >&2; exit )
         ;;
       -n | --name )
         shift
-        [ __DEV ] && $__devtxt"Setting app name to $1"
+        [ $__DEV ] && $__devtxt"Setting app name to $1"
         [ ! -z "$1" ] && __gsname "$1" || ( $__errtxt"Must supply value to argument!" >&2; exit )
         ;;
       -l | --location )
         shift
-        [ __DEV ] && $__devtxt"Setting app location to $1"
+        [ $__DEV ] && $__devtxt"Setting app location to $1"
         [ ! -z "$1" ] && __gsloc "$1" || ( $__errtxt"Must supply value to argument!" >&2; exit )
         ;;
       -o | --options )

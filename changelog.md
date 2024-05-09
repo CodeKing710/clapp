@@ -10,11 +10,10 @@
 
 # What's Next
 
-- Move file heredocs to variables outside of the function (will allow proper folding and use less cpu at the cost of more RAM)
 - Convert some defaults to settings
-- Support for code that loads settings within the generated app (bash focus)
+- [DONE] Support for code that loads settings within the generated app (bash focus)
 - Add option to use new handoff-arglist style of arg parsing (bash)
-- Move app generation files to HereDoc Files (*.hdf)
+- [DONE] Move app generation files to HereDoc Files (*.hdf)
 
 # Bugs
 ## Key:
