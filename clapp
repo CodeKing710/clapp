@@ -51,7 +51,7 @@ clapp() {
       __mksh
       ;;
     * )
-      $__errtxt"App type unknown! Defaulting to general project structure!"
+      $__errtxt"App type unknown! Defaulting to general project structure!" >&2
       s_apptype="sh" # Set since the type was overridden with unknown type
       ;;
   esac
