@@ -226,7 +226,7 @@ __args() {
           exit
         fi
         ;;
-      -h | --help )
+      -\? | -h | --help )
         echo "`cat $HOME/.clapp/help`"
         exit;;
       -v | --version )
