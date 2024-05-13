@@ -1,6 +1,6 @@
 #!/bin/bash
 # SOURCE THIS FILE FOR HEREDOC INTERPOLATION
-__SHAPP=`cat <<-APP
+__MAIN=`cat <<-APP
 # $s_appname's main code
 
 autoupdate=\\\`cat \\\$HOME/.${s_appname,,}/.cfg | grep 'autoup' | cut -d '=' -f2\\\`
@@ -25,7 +25,9 @@ fi
 
 
 __${s_appname,,}() {
-  [ -z "\\\$1" ] && __args -h || __args \\\$@
+APP
+`
+__END=`cat <<-END
   # Write your app's main flow here (General stub supports arg handling)
 }
 
@@ -33,5 +35,23 @@ __${s_appname,,} \\\$@
 
 # Cleanup for accidental sourcing
 unset __${s_appname,,} __args __cwd autoupdate repo
-APP
+END
 `
+__MAINCMD=`cat <<CMD
+  if [ -z "\\\$1" ]; then
+    __args -?
+  else
+    if [[ "\\\$1" =~ "-" ]]; then
+      # Arg mode
+      __args "\\\$@"
+    else
+      # Command mode
+      __cmds "\\\$@"
+    fi
+  fi
+CMD
+`
+
+__SHAPP="$__MAIN\n$([[ $__CMD ]] && echo "$__MAINCMD" || echo "  [ -z "\$1" ] && __args -? || __args \$@")\n$__END"
+
+# EOF

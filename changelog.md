@@ -1,21 +1,21 @@
 # CLApp Changelog
 
-# What's New
+# What's New (v1.4.1)
 
 - Support for making Python apps
 - Support for making Node apps
 - Built-in unit test code for each type of app
+- Built-in settings code for bash apps
 - Auto updates
-- Settings!
-
-# What's Next
-
-- Convert some defaults to settings
-- Add option to use new handoff-arglist style of arg parsing (bash)
 - Shorthand style
-- Value lists for rule sets
-- [DONE] Support for code that loads settings within the generated app (bash focus)
-- [DONE] Move app generation files to HereDoc Files (*.hdf)
+- Settings
+- Alternative arg handling functions
+- Command mode option
+- Under the hood improvements
+
+# What's Next (v1.5.0)
+
+- Not sure
 
 # Bugs
 ## Key:

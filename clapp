@@ -20,13 +20,14 @@ if [[ $CLAPP_TST ]]; then
   prgroot="$repo/.clapp"
 elif [[ $autoupdate ]]; then
   # Check for updates
-  [ ! -d $HOME/.clapp ] && $repo/install
+  [ ! -d $HOME/.clapp ] && mkdir $HOME/.clapp && $repo/install
   if [[ `diff $repo/.clapp/.lib $HOME/.clapp/.lib` \
   || `diff $repo/.clapp/version $HOME/.clapp/version` \
   || `diff $repo/.clapp/help $HOME/.clapp/help` \
   || `diff $repo/.clapp/assets/bash $HOME/.clapp/assets/bash` \
   || `diff $repo/.clapp/assets/node $HOME/.clapp/assets/node` \
   || `diff $repo/.clapp/assets/python $HOME/.clapp/assets/python` \
+  || `diff $repo/.clapp/docs $HOME/.clapp/docs` \
   || `diff $repo/clapp $HOME/bin/clapp` ]]; then echo "Update found! Installing..."; $repo/install; fi
 
   # Load lib
@@ -43,10 +44,10 @@ clapp() {
   fi
 
   # Set prog states or list usage since this cannot run without args
-  __args $@
+  [[ "$1" =~ '-' ]] && __args $@ || __quick $@
   
   # Parse states into respective apps
-  case "${s_apptype,}" in
+  case "${s_apptype,,}" in
     n | node )
       __mknode # No args required as the function relies on the states
       ;;

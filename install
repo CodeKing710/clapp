@@ -4,8 +4,11 @@
 install() {
   local repo=$(find $HOME -type d -name clapp)
   cp $repo/clapp $HOME/bin || return
-  cp -r $repo/.clapp $HOME || return
-  # echo -e "\e[0;1;36m[CLApp]\e[0;0;0m CLApp installed!"
+  cp $repo/.clapp/.lib $HOME/.clapp || return
+  cp $repo/.clapp/help $HOME/.clapp || return
+  cp $repo/.clapp/version $HOME/.clapp || return
+  cp -r $repo/.clapp/assets $HOME/.clapp || return
+  cp -r $repo/.clapp/docs $HOME/.clapp || return
 }
 
 install

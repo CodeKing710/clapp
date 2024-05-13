@@ -10,6 +10,8 @@ s_apptype="`cat $prgroot/.cfg | grep ^type= | cut -d '=' -f2`"
 s_apploc="`pwd`/${s_appname,,}"
 __srced="${s_appname,,}"
 declare -A s_appopts
+declare -A v_lists # Setup for bash clapp apps
+v_lists[this]="'bash' 'sh' 'py' 'python' 'node' 'n' 'js'"
 __cwd=`pwd`
 __errtxt='echo -e ''\e[0;1;31m[ERROR]\e[0;0;0m '
 __systxt='echo -e ''\e[0;1;36m[CLApp]\e[0;0;0m '
@@ -53,6 +55,8 @@ __gsopts() {
     for arg in $@; do
       local option="`echo "$arg" | cut -d '=' -f1`"
       local value="`echo "$arg" | cut -d '=' -f2`"
+      [[ $__DEV ]] && $__devtxt"Option: $option"
+      [[ $__DEV ]] && $__devtxt"Value: $value"
 
       if [[ "$option" == "name" ]]; then
         s_appname="$value"
@@ -73,16 +77,29 @@ __gscfg() {
       local rule="`echo "$1" | cut -d '=' -f1`"
       local oldvalue="`cat $cfg | grep "$rule" | cut -d '=' -f2`"
       local newvalue="`echo "$1" | cut -d '=' -f2`"
-      sed -i -e "s/$rule=$oldvalue/$rule=$newvalue/" $cfg
+      if [[ $rule == 'type' ]]; then
+        local types=("${v_lists[this]}");
+        for type in $types; do
+          if [[ "$type" =~ "$newvalue" ]]; then
+            [[ $__DEV ]] && $__devtxt"Setting $rule"
+            sed -i -e "s/$rule=$oldvalue/$rule=$newvalue/" $cfg
+            break
+          fi
+        done
+      else
+        sed -i -e "s/$rule=$oldvalue/$rule=$newvalue/" $cfg
+      fi
       echo "Updated rule $rule from $oldvalue to $newvalue!"
     elif [[ $1 == 'list' ]]; then
       echo "Current Settings:"
       cat $cfg
       return
     elif [[ $1 == 'RESET' ]]; then
-      __args --reset
+      __args --reset-cfg
+      return
+    else
+      echo "Rule: `cat $cfg | grep "\b$1" || echo "No Rule Found!"`"
     fi
-    echo "Rule: `cat $cfg | grep "\b$1\b" || echo "No Rule Found!"`"
   shift; done
 }
 
@@ -252,6 +269,10 @@ __args() {
         shift
         [ ! -z "$1" ] && __gscfg "$@" || ( $__errtxt"Must supply config option to get/set or 'list'!" >&2; exit )
         exit;;
+      --reset-cfg )
+        echo "Resetting CLApp to default configuration..."
+        cp -rf $(find $HOME -type d -name clapp)/.clapp $HOME && echo "CLApp's config has been reset!" || echo "Failed to reset defaults!"
+        exit;;
       -\? | -h | --help )
         echo "`cat $HOME/.clapp/help`"
         exit;;
@@ -281,4 +302,23 @@ __args() {
   [ $__DEV ] && $__devtxt"Type: `__gstype`"
   [ $__DEV ] && $__devtxt"Name: `__gsname`"
   [ $__DEV ] && $__devtxt"Path: `__gsloc`"
+}
+__quick() {
+  # CLApp's shorthand style
+  # clapp <name> <type> [location] [options...]
+  local name="$1"; shift
+  local type="$1"; shift
+  local loc=`[[ "$1" =~ '=' ]] && echo "$@" || echo `; shift
+  local opts=`[[ "$loc" == "$@" ]] & echo "" || echo "$@"`
+
+  if [[ -n "$opts" ]]; then
+    __gsname $name 
+    __gstype $type
+    __gsloc $loc
+    __gsopts "${opts}"
+  else
+    __gsname $name 
+    __gstype $type
+    __gsopts "${loc}"
+  fi
 }
