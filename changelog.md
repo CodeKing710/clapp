@@ -11,8 +11,10 @@
 # What's Next
 
 - Convert some defaults to settings
-- [DONE] Support for code that loads settings within the generated app (bash focus)
 - Add option to use new handoff-arglist style of arg parsing (bash)
+- Shorthand style
+- Value lists for rule sets
+- [DONE] Support for code that loads settings within the generated app (bash focus)
 - [DONE] Move app generation files to HereDoc Files (*.hdf)
 
 # Bugs

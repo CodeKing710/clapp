@@ -6,7 +6,7 @@ sh_assets="$prgroot/assets/bash"
 js_assets="$prgroot/assets/node"
 py_assets="$prgroot/assets/python"
 s_appname="my_app"
-s_apptype="sh"
+s_apptype="`cat $prgroot/.cfg | grep ^type= | cut -d '=' -f2`"
 s_apploc="`pwd`/${s_appname,,}"
 __srced="${s_appname,,}"
 declare -A s_appopts
@@ -65,6 +65,25 @@ __gsopts() {
       fi
     done
   fi
+}
+__gscfg() {
+  local cfg="$prgroot/.cfg"
+  while [[ $1 ]]; do
+    if [[ $1 =~ '=' ]]; then
+      local rule="`echo "$1" | cut -d '=' -f1`"
+      local oldvalue="`cat $cfg | grep "$rule" | cut -d '=' -f2`"
+      local newvalue="`echo "$1" | cut -d '=' -f2`"
+      sed -i -e "s/$rule=$oldvalue/$rule=$newvalue/" $cfg
+      echo "Updated rule $rule from $oldvalue to $newvalue!"
+    elif [[ $1 == 'list' ]]; then
+      echo "Current Settings:"
+      cat $cfg
+      return
+    elif [[ $1 == 'RESET' ]]; then
+      __args --reset
+    fi
+    echo "Rule: `cat $cfg | grep "\b$1\b" || echo "No Rule Found!"`"
+  shift; done
 }
 
 # Functionality
@@ -229,6 +248,10 @@ __args() {
           exit
         fi
         ;;
+      -C | --config )
+        shift
+        [ ! -z "$1" ] && __gscfg "$@" || ( $__errtxt"Must supply config option to get/set or 'list'!" >&2; exit )
+        exit;;
       -\? | -h | --help )
         echo "`cat $HOME/.clapp/help`"
         exit;;
@@ -239,8 +262,13 @@ __args() {
         # Clapp does this by default, this ensures clapp doesn't continue execution
         [[ `diff $HOME/bin/clapp $(find $HOME -type d -name clapp)/clapp` ]] || $__systxt"CLApp up to date!"
         exit;;
-      # --docs )
-      #   ;;
+      --docs )
+        shift
+        local sys=`uname -a`
+        if [[ $sys =~ 'MINGW' || $sys =~ 'WSL' ]]; then
+          ( "`find "$([[ "$sys" =~ 'WSL' ]] && echo "/mnt")""/c/Program Files (x86)/" -type f -name msedge.exe 2>/dev/null | head -1`" $prgroot/docs/index.html & )
+        fi
+        exit;;
       -V | --verbose )
         __DEV=true
         ;;
