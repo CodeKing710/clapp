@@ -140,8 +140,11 @@ __mkpy() {
   $__systxt"Refer to documentation in clapp (clapp --docs) on further setup!"
 }
 __mksh() {
-  __opts # Process app options and properties
-  
+  # Process app options and properties
+  __opts
+  [ ${s_appopts[altargfunc]} ] && __ALT=true
+  [ ${s_appopts[commands]} ] && __CMD=true
+
   # Pull HDFs (__SHINSTALL, __SHAPP, __SHLIB)
   source "$sh_assets/install.hdf"
   source "$sh_assets/main.hdf"
