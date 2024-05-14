@@ -63,6 +63,9 @@ __args() {
       -v | --version )
         cat \\\$prgroot/version
         exit;;
+      -V | --verbose )
+        VERBOSE=true
+        ;;
       * ) # Catch-all
         cat \\\$prgroot/help | head -1
         echo "\\"\\\$1\\" is not an argument!"
@@ -97,6 +100,9 @@ __args() {
       -v | --version )
         cat \\\$prgroot/version
         exit;;
+      -V | --verbose )
+        VERBOSE=true
+        ;;
       * ) # Catch-all
         cat \\\$prgroot/help | head -1
         echo "\\"\\\$1\\" is not an argument!"
@@ -142,7 +148,7 @@ error() {
 verbose() {
   local msg="\\\$1"
 
-  echo -e '\e[0;1;35m[VERBOSE]\e[0;0;0m '"\\\$msg"
+  [[ \\\$VERBOSE ]] && echo -e '\e[0;1;35m[VERBOSE]\e[0;0;0m '"\\\$msg"
 }
 BAK
 `
