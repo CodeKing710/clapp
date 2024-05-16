@@ -37,7 +37,7 @@ __cfg() {
 		elif [[ \\\$1 == 'RESET' ]]; then
 			__args --reset
 		fi
-		echo "Rule: \\\`cat \\\$cfg | grep "\b\\\$1\b" || echo "No Rule Found!"\\\`"
+		echo "Rule: \\\`cat \\\$cfg | grep "\\b\\\$1\\b" || echo "No Rule Found!"\\\`"
 	shift; done
 }
 LIB
