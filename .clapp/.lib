@@ -162,14 +162,14 @@ __mknode() {
   [ ! -z "$pkginstallstr" ] && echo "Installing packages..." && ( npm i $pkginstallstr )>>/dev/null && echo "Packages installed!"
 }
 __mkpy() {
-  [[ `command -v python || command -v python3` ]] && $__errtxt"Python Not Installed!" && exit
+  if [[ ! `command -v python` && ! `command -v python3` ]]; then $__errtxt"Python Not Installed!"; exit; fi
   __opts
 
   source "$py_assets/main.hdf" # __PYAPP
   touch "$s_apploc/version"
   touch "$s_apploc/help"
   echo -e "$__PYAPP" >> "$s_apploc/$s_appname.py"
-  chmod u+x "$s_apploc/$s_appname"
+  chmod u+x "$s_apploc/$s_appname.py"
 
   # If we got here, we succeeded
   $__systxt"Successfully made app $s_appname in location $s_apploc!"
