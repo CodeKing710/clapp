@@ -9,7 +9,7 @@
 #  - Python Web App (Flask, Django)
 #
 
-autoupdate=`cat $HOME/.bsm/.cfg | grep 'autoup' | cut -d '=' -f2`
+autoupdate=`cat $HOME/.clapp/.cfg | grep 'autoup' | cut -d '=' -f2`
 repo=$(find $HOME -type d -name clapp)
 
 # Check for unit test
@@ -44,11 +44,11 @@ clapp() {
   fi
 
   # Set prog states or list usage since this cannot run without args
-  [[ "$1" =~ '-' ]] && __args $@ || __quick $@
+  [[ "$1" =~ '-' ]] && __args "$@" || __quick "$@"
   
   # Parse states into respective apps
   case "${s_apptype,,}" in
-    n | node )
+    js | node )
       __mknode # No args required as the function relies on the states
       ;;
     py | python )
@@ -60,6 +60,7 @@ clapp() {
     * )
       $__errtxt"App type unknown! Defaulting to general project structure!" >&2
       s_apptype="sh" # Set since the type was overridden with unknown type
+      __mksh
       ;;
   esac
 }
