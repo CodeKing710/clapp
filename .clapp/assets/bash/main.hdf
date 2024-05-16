@@ -1,54 +1,54 @@
 #!/bin/bash
 # SOURCE THIS FILE FOR HEREDOC INTERPOLATION
-__MAIN=`cat <<-APP
-# $s_appname's main code
+__MAIN=`cat <<- APP
+	# $s_appname's main code
 
-autoupdate=\\\`cat \\\$HOME/.${s_appname,,}/.cfg | grep 'autoup' | cut -d '=' -f2\\\`
-repo=\\\`find \\\$HOME -type d -name $__srced\\\`
+	autoupdate=\\\`cat \\\$HOME/.${s_appname,,}/.cfg | grep 'autoup' | cut -d '=' -f2\\\`
+	repo=\\\`find \\\$HOME -type d -name $__srced\\\`
 
-# Check for unit test
-if [ \\\$${s_appname^^}_TST ]; then
-  # Load the lib from the repo and set prgroot to repo
-  echo -e "[${s_appname^^}] UNIT TEST MODE! READING FROM REPO!"
-  source \\\$repo/.${s_appname,,}/.lib
-  prgroot="\\\$repo/.${s_appname,,}"
-elif [[ \\\$autoupdate ]]; then
-  # Check for updates
-  [ ! -d \\\$HOME/.${s_appname,,} ] && \\\$repo/install
-  if [[ \\\`diff \\\$repo/.${s_appname,,} \\\$HOME/.${s_appname,,}\\\` ]]; then echo "Updating ${s_appname,,}..."; \\\$repo/install; fi
-  
-  # Load lib
-  source \\\$HOME/.${s_appname,,}/.lib
-else
-  source \\\$HOME/.${s_appname,,}/.lib
-fi
+	# Check for unit test
+	if [ \\\$${s_appname^^}_TST ]; then
+		# Load the lib from the repo and set prgroot to repo
+		echo -e "[${s_appname^^}] UNIT TEST MODE! READING FROM REPO!"
+		source \\\$repo/.${s_appname,,}/.lib
+		prgroot="\\\$repo/.${s_appname,,}"
+	elif [[ \\\$autoupdate ]]; then
+		# Check for updates
+		[ ! -d \\\$HOME/.${s_appname,,} ] && \\\$repo/install
+		if [[ \\\`diff \\\$repo/.${s_appname,,} \\\$HOME/.${s_appname,,}\\\` ]]; then echo "Updating ${s_appname,,}..."; \\\$repo/install; fi
+		
+		# Load lib
+		source \\\$HOME/.${s_appname,,}/.lib
+	else
+		source \\\$HOME/.${s_appname,,}/.lib
+	fi
 
 
-__${s_appname,,}() {
+	__${s_appname,,}() {
 APP
 `
-__END=`cat <<-END
-  # Write your app's main flow here (General stub supports arg handling)
-}
+__END=`cat <<- END
+		# Write your app's main flow here (General stub supports arg handling)
+	}
 
-__${s_appname,,} \\\$@
+	__${s_appname,,} \\\$@
 
-# Cleanup for accidental sourcing
-unset __${s_appname,,} __args __cwd autoupdate repo
+	# Cleanup for accidental sourcing
+	unset __${s_appname,,} __args __cwd autoupdate repo
 END
 `
 __MAINCMD=`cat <<CMD
-  if [ -z "\\\$1" ]; then
-    __args -?
-  else
-    if [[ "\\\$1" =~ "-" ]]; then
-      # Arg mode
-      __args "\\\$@"
-    else
-      # Command mode
-      __cmds "\\\$@"
-    fi
-  fi
+	if [ -z "\\\$1" ]; then
+		__args -?
+	else
+		if [[ "\\\$1" =~ "-" ]]; then
+			# Arg mode
+			__args "\\\$@"
+		else
+			# Command mode
+			__cmds "\\\$@"
+		fi
+	fi
 CMD
 `
 
