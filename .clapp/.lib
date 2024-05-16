@@ -307,18 +307,18 @@ __quick() {
   # CLApp's shorthand style
   # clapp <name> <type> [location] [options...]
   local name="$1"; shift
-  local type="$1"; shift
-  local loc=`[[ "$1" =~ '=' ]] && echo "$@" || echo `; shift
-  local opts=`[[ "$loc" == "$@" ]] & echo "" || echo "$@"`
+  local type=`[ -n "$1" ] && echo "$1" || echo "${s_apptype,,}"`; shift
+  local loc=`[[ "$1" =~ '=' ]] && echo "$@" || echo "$1"`; shift
+  local opts=`[[ "$loc" == "$@" ]] && echo "" || echo "$@"`
 
   if [[ -n "$opts" ]]; then
-    __gsname $name 
-    __gstype $type
-    __gsloc $loc
+    __gsname "$name"
+    __gstype "$type"
+    __gsloc "$loc"
     __gsopts "${opts}"
   else
-    __gsname $name 
-    __gstype $type
+    __gsname "$name"
+    __gstype "$type"
     __gsopts "${loc}"
   fi
 }

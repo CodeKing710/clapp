@@ -25,4 +25,7 @@
 **D=Deleted**
 
 - CB000000 [R]: Auto-update sometimes results in unexpected code being run or app crashing errors to be thrown, only use if you are sure you can reverse the operation!
-                **Resolution**: If you experience issues, just run the command again, cleaning up rogue files, generally due to files not being fully copied yet and bash still parsing the app code (copy-run conflicts)
+            **Resolution**: If you experience issues, just run the command again, cleaning up rogue files, generally due to files not being fully copied yet and bash still parsing the app code (copy-run conflicts)
+
+- CB000001 [R]: Shorthand style would take over when arg style is desired
+            **FIX**: No longer unexpectedly runs shorthand style when running in arg style

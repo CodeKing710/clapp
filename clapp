@@ -44,7 +44,7 @@ clapp() {
   fi
 
   # Set prog states or list usage since this cannot run without args
-  [[ "$1" =~ '-' ]] && __args "$@" || __quick "$@"
+  if [[ "$1" =~ '-' ]]; then __args "$@"; else __quick "$@"; fi
   
   # Parse states into respective apps
   case "${s_apptype,,}" in
