@@ -18,7 +18,7 @@ if [[ $CLAPP_TST ]]; then
   echo -e "UNIT TEST MODE! READING FROM REPO!"
   source $repo/.clapp/.lib
   prgroot="$repo/.clapp"
-elif [[ $autoupdate ]]; then
+elif [[ "$autoupdate" == "true" ]]; then
   # Check for updates
   [ ! -d $HOME/.clapp ] && mkdir $HOME/.clapp && $repo/install
   if [[ `diff $repo/.clapp/.lib $HOME/.clapp/.lib` \
@@ -48,7 +48,7 @@ clapp() {
   
   # Parse states into respective apps
   case "${s_apptype,,}" in
-    js | node )
+    js | node | javascript )
       __mknode # No args required as the function relies on the states
       ;;
     py | python )

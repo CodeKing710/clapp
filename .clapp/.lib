@@ -11,7 +11,7 @@ s_apploc="`pwd`/${s_appname,,}"
 __srced="${s_appname,,}"
 declare -A s_appopts
 declare -A v_lists # Setup for bash clapp apps
-v_lists[this]="^(bash|sh|py|python|node|js)$"
+v_lists[this]="^(bash|sh|py|python|node|js|javascript)$"
 __cwd=`pwd`
 __errtxt='echo -e ''\e[0;1;31m[ERROR]\e[0;0;0m '
 __systxt='echo -e ''\e[0;1;36m[CLApp]\e[0;0;0m '
