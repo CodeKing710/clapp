@@ -11,7 +11,7 @@ s_apploc="`pwd`/${s_appname,,}"
 __srced="${s_appname,,}"
 declare -A s_appopts
 declare -A v_lists # Setup for bash clapp apps
-v_lists[this]="'bash' 'sh' 'py' 'python' 'node' 'n' 'js'"
+v_lists[this]="^(bash|sh|py|python|node|js)$"
 __cwd=`pwd`
 __errtxt='echo -e ''\e[0;1;31m[ERROR]\e[0;0;0m '
 __systxt='echo -e ''\e[0;1;36m[CLApp]\e[0;0;0m '
@@ -71,34 +71,38 @@ __gsopts() {
   fi
 }
 __gscfg() {
+  rwrite() {
+    [[ $__DEV ]] && $__devtxt"Setting $rule"
+    sed -i -e "s/$rule=$oldvalue/$rule=$newvalue/" $cfg
+    $__systxt"Updated rule $rule from $oldvalue to $newvalue!"
+  }
   local cfg="$prgroot/.cfg"
   while [[ $1 ]]; do
     if [[ $1 =~ '=' ]]; then
       local rule="`echo "$1" | cut -d '=' -f1`"
       local oldvalue="`cat $cfg | grep "$rule" | cut -d '=' -f2`"
       local newvalue="`echo "$1" | cut -d '=' -f2`"
-      if [[ $rule == 'type' ]]; then
-        local types=("${v_lists[this]}");
-        for type in $types; do
-          if [[ "$type" =~ "$newvalue" ]]; then
-            [[ $__DEV ]] && $__devtxt"Setting $rule"
-            sed -i -e "s/$rule=$oldvalue/$rule=$newvalue/" $cfg
-            break
+      case "$rule" in
+        type )
+          if [[ ! "${newvalue,,}" =~ ${v_lists[this]} ]]; then
+            $__errtxt"Type value must be Bash, Node, or Python!"
+          else
+            rwrite
           fi
-        done
-      else
-        sed -i -e "s/$rule=$oldvalue/$rule=$newvalue/" $cfg
-      fi
-      echo "Updated rule $rule from $oldvalue to $newvalue!"
+          ;;
+        * )
+          rwrite
+          ;;
+      esac
     elif [[ $1 == 'list' ]]; then
-      echo "Current Settings:"
+      $__systxt"Current Settings:"
       cat $cfg
       return
     elif [[ $1 == 'RESET' ]]; then
       __args --reset-cfg
       return
     else
-      echo "Rule: `cat $cfg | grep "\b$1" || echo "No Rule Found!"`"
+      $__systxt"Rule: `cat $cfg | grep "\b$1\b" || echo "No Rule Found!"`"
     fi
   shift; done
 }
