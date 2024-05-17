@@ -2,7 +2,19 @@
 
 __JSAPP=`cat <<-APP
 (async function() {
-  // Write code here
+  // Uncomment the following if using a packaged environment
+  // Adjust paths accordingly
+  // const venv = "$HOME/.venv/node_modules/";
+  // const get = (loc) => {return require(\\\`\\\${venv}\\\${loc}\\\`)};
+
+  const express = get("express");
+  const app = express();
+
+  app.get('/', (req, res) => {
+    res.status(200).render('index');
+  });
+
+  app.listen(process.env.PORT || 3000, console.log(\\\`Listening on port \\\${process.env.PORT}...\\\`));
 })();
 APP
 `
