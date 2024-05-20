@@ -15,7 +15,7 @@
 
 # What's Next (v1.5.0)
 
-- Not sure
+- System-install variant for when you want any user to access the app
 
 # Bugs
 ## Key:
