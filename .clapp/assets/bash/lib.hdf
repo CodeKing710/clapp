@@ -145,5 +145,5 @@ log() { echo -e '\e[0;1;32m[${s_appname^^}]\e[0;0;0m '"\\\$msg"; }
 BAK
 `
 
-__SHLIB="${__FRONT}\n$([[ $__ALT ]] && echo "$__ALTFUNC" || echo "$__ARGFUNC")\n\n$([[ $__CMD ]] && echo "$__CMDFUNC\n")${__BACK}"
+__SHLIB="${__FRONT}\n$([[ "$__ALT" == "true" ]] && echo "$__ALTFUNC" || echo "$__ARGFUNC")\n\n$([[ "$__CMD" == "true" ]] && echo "$__CMDFUNC\n")${__BACK}"
 # EOF
