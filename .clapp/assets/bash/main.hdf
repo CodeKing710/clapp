@@ -14,7 +14,7 @@ if [[ "\\\$${s_appname^^}_TST" == "true" ]]; then
 	prgroot="\\\$repo/.${s_appname,,}"
 elif [[ "\\\$autoupdate" == "true" ]]; then
 	# Check for updates
-	[ ! -d "\\\$HOME"/.${s_appname,,}" ] && "\\\$repo/install"
+	[ ! -d "\\\$HOME"/.${s_appname,,} ] && "\\\$repo/install"
 	if [[ "\\\$(diff "\\\$repo"/.${s_appname,,} "\\\$HOME"/.${s_appname,,})" ]]; then echo "Updating ${s_appname,,}..."; "\\\$repo/install"; fi
 	
 	# Load lib
