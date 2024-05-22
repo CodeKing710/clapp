@@ -50,25 +50,30 @@ __args() {
 		case "\\\$1" in
 			-C | --config )
 				shift
-				[ ! -z "\\\$1" ] && __cfg "\\\$@" || ( error "Must supply rule or 'list'!"; exit )
+				[[ ! -z "\\\$1" ]] && __cfg "\\\$@" || ( error "Must supply rule or 'list'!"; exit )
 				exit;;
 			--reset-cfg )
 				echo "Resetting ${s_appname} to default configuration..."
-				cp -rf \\\$(find \\\$HOME -type d -name ${s_appname,,})/.${s_appname,,} \\\$HOME && echo "${s_appname}'s config has been reset!" || echo "Failed to reset defaults!"
+				cp -rf \\\$(find "\\\$HOME" -type d -name ${s_appname,,} 2>/dev/null | head -1)/.${s_appname,,} "\\\$HOME/" && echo "${s_appname}'s config has been reset!" || echo "Failed to reset defaults!"
 				exit;;
 			-\\? | -h | --help )
-				cat \\\$prgroot/help
+				cat "\\\$prgroot/help"
 				exit;;
 			-v | --version )
-				cat \\\$prgroot/version
+				cat "\\\$prgroot/version"
 				exit;;
 			-V | --verbose )
 				VERBOSE=true
 				;;
 			* ) # Catch-all
-				cat \\\$prgroot/help | head -1
-				echo "\\"\\\$1\\" is not an argument!"
-				exit;;
+				if [[ \\\$(type -f __cmds) == "function" && ! "\\\$1" =~ '-' ]]; then
+					__cmds "\\\$@"
+				else
+					cat "\\\$prgroot/help" | head -1
+					echo "\\"\\\$1\\" is not an argument!"
+					exit
+				fi
+				return;;
 		esac
 	shift; done
 }
@@ -87,11 +92,11 @@ __args() {
 		#   return;;
 		case "\\\$1" in
 			-C | --config )
-				shift; [ ! -z "\\\$1" ] && __cfg "\\\$@" || ( error "Must supply rule or 'list'!"; exit )
+				shift; [[ ! -z "\\\$1" ]] && __cfg "\\\$@" || ( error "Must supply rule or 'list'!"; exit )
 				return;; # So the function doesn't endlessly recurse
 			--reset-cfg )
 				echo "Resetting ${s_appname} to default configuration..."
-				cp -rf \\\$(find \\\$HOME -type d -name ${s_appname,,})/.${s_appname,,} \\\$HOME && echo "${s_appname}'s config has been reset!" || echo "Failed to reset defaults!"
+				cp -rf \\\$(find "\\\$HOME" -type d -name ${s_appname,,} 2>/dev/null | head -1)/.${s_appname,,} "\\\$HOME/" && echo "${s_appname}'s config has been reset!" || echo "Failed to reset defaults!"
 				exit;;
 			-\\? | -h | --help )
 				cat "\\\$prgroot/help"
@@ -103,9 +108,14 @@ __args() {
 				VERBOSE=true
 				;;
 			* ) # Catch-all
-				cat "\\\$prgroot/help" | head -1
-				echo "\\"\\\$1\\" is not an argument!"
-				exit;;
+				if [[ \\\$(type -f __cmds) == "function" && ! "\\\$1" =~ '-' ]]; then
+					__cmds "\\\$@"
+				else
+					cat "\\\$prgroot/help" | head -1
+					echo "\\"\\\$1\\" is not an argument!"
+					exit
+				fi
+				return;;
 		esac
 	shift; done
 }
@@ -130,9 +140,14 @@ __cmds() {
 				cat "\\\$prgroot/version"
 				exit;;
 			* ) # Catch-all
-				cat "\\\$prgroot/help" | head -1
-				echo "\\"\\\$1\\" is not an argument!"
-				exit;;
+				if [[ "\\\$1" =~ '-' ]]; then
+					__args "\\\$@"
+				else
+					cat "\\\$prgroot/help" | head -1
+					echo "\\"\\\$1\\" is not a command!"
+					exit
+				fi
+				return;;
 		esac
 	shift; done
 }
