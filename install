@@ -2,13 +2,13 @@
 
 # Install script for clapp
 install() {
-  local repo=$(find $HOME -type d -name clapp)
-  cp $repo/clapp $HOME/bin || return
-  cp $repo/.clapp/.lib $HOME/.clapp || return
-  cp $repo/.clapp/help $HOME/.clapp || return
-  cp $repo/.clapp/version $HOME/.clapp || return
-  cp -r $repo/.clapp/assets $HOME/.clapp || return
-  cp -r $repo/.clapp/docs $HOME/.clapp || return
+  local repo="$(find "$HOME" -type d -name clapp 2>devnull | head -1)"
+  cp -f "$repo"/clapp "$HOME"/bin/clapp || return
+  cp -f "$repo"/.clapp/.lib "$HOME"/.clapp/.lib || return
+  cp -f "$repo"/.clapp/help "$HOME"/.clapp/help || return
+  cp -f "$repo"/.clapp/version "$HOME"/.clapp/version || return
+  cp -f -r "$repo"/.clapp/assets "$HOME"/.clapp/assets || return
+  cp -f -r "$repo"/.clapp/docs "$HOME"/.clapp/docs || return
 }
 
 install

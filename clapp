@@ -9,37 +9,37 @@
 #  - Python Web App (Flask, Django)
 #
 
-autoupdate=`cat $HOME/.clapp/.cfg | grep 'autoup' | cut -d '=' -f2`
-repo=$(find $HOME -type d -name clapp)
+autoupdate="$(cat "$HOME"/.clapp/.cfg | grep 'autoup' | cut -d '=' -f2)"
+repo="$(find "$HOME" -type d -name clapp 2>/dev/null | head -1)"
 
 # Check for unit test
-if [[ $CLAPP_TST ]]; then
+if [[ "$CLAPP_TST" == "true" ]]; then
   # Load the lib from the repo and set prgroot to repo
   echo -e "UNIT TEST MODE! READING FROM REPO!"
-  source $repo/.clapp/.lib
+  source "$repo"/.clapp/.lib
   prgroot="$repo/.clapp"
 elif [[ "$autoupdate" == "true" ]]; then
   # Check for updates
-  [ ! -d $HOME/.clapp ] && mkdir $HOME/.clapp && $repo/install
-  if [[ `diff $repo/.clapp/.lib $HOME/.clapp/.lib` \
-  || `diff $repo/.clapp/version $HOME/.clapp/version` \
-  || `diff $repo/.clapp/help $HOME/.clapp/help` \
-  || `diff $repo/.clapp/assets/bash $HOME/.clapp/assets/bash` \
-  || `diff $repo/.clapp/assets/node $HOME/.clapp/assets/node` \
-  || `diff $repo/.clapp/assets/python $HOME/.clapp/assets/python` \
-  || `diff $repo/.clapp/docs $HOME/.clapp/docs` \
-  || `diff $repo/clapp $HOME/bin/clapp` ]]; then echo "Update found! Installing..."; $repo/install; fi
+  [ ! -d "$HOME"/.clapp ] && mkdir "$HOME"/.clapp && "$repo"/install
+  if [[ $(diff "$repo"/.clapp/.lib "$HOME"/.clapp/.lib) \
+  || $(diff "$repo"/.clapp/version "$HOME"/.clapp/version) \
+  || $(diff "$repo"/.clapp/help "$HOME"/.clapp/help) \
+  || $(diff "$repo"/.clapp/assets/bash "$HOME"/.clapp/assets/bash) \
+  || $(diff "$repo"/.clapp/assets/node "$HOME"/.clapp/assets/node) \
+  || $(diff "$repo"/.clapp/assets/python "$HOME"/.clapp/assets/python) \
+  || $(diff "$repo"/.clapp/docs "$HOME"/.clapp/docs) \
+  || $(diff "$repo"/clapp "$HOME"/bin/clapp) ]]; then echo "Update found! Installing..."; "$repo"/install; fi
 
   # Load lib
-  source $HOME/.clapp/.lib
+  source "$HOME"/.clapp/.lib
 else
-  source $HOME/.clapp/.lib
+  source "$HOME"/.clapp/.lib
 fi
 
 # Main container
 clapp() {
   if [ -z "$1" ]; then
-    echo "`cat $HOME/.clapp/help | head -1`"
+    echo "$(cat "$HOME"/.clapp/help | head -1)"
     return
   fi
 
