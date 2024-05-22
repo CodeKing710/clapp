@@ -6,22 +6,17 @@ sh_assets="$prgroot/assets/bash"
 js_assets="$prgroot/assets/node"
 py_assets="$prgroot/assets/python"
 s_appname="my_app"
-s_apptype="`cat $prgroot/.cfg | grep ^type= | cut -d '=' -f2`"
-s_apploc="`pwd`/${s_appname,,}"
+s_apptype="$(cat $prgroot/.cfg | grep ^type= | cut -d '=' -f2)"
+s_apploc="$PWD/${s_appname,,}"
 __srced="${s_appname,,}"
 declare -A s_appopts
 declare -A v_lists # Setup for bash clapp apps
-v_lists[this]="^(bash|sh|py|python|node|js|javascript)$"
+lists[types]="^(bash|sh|py|python|node|js|javascript)$"
 __cwd=`pwd`
-__errtxt='echo -e ''\e[0;1;31m[ERROR]\e[0;0;0m '
-__systxt='echo -e ''\e[0;1;36m[CLApp]\e[0;0;0m '
-__devtxt='echo -e ''\e[0;1;95m[CLAppDev]\e[0;0;0m '
 
-# __loadcfg() {
-#   local cfg="$prgroot/.cfg"
-# }
-# # Config vars will be set via function in-case of needing reloaded
-# __loadcfg
+error() {echo -e '\e[0;1;31m[ERROR]\e[0;0;0m '"${1}" &>2;}
+verbose() {[[ "$__DEV" == "true" ]] && echo -e '\e[0;1;95m[CLAppDev]\e[0;0;0m '"${1}";}
+log() {echo -e '\e[0;1;36m[CLApp]\e[0;0;0m '"${1}";}
 
 # Getter/Setters for states
 __gstype() {
@@ -55,8 +50,8 @@ __gsopts() {
     for arg in $@; do
       local option="`echo "$arg" | cut -d '=' -f1`"
       local value="`echo "$arg" | cut -d '=' -f2`"
-      [[ $__DEV ]] && $__devtxt"Option: $option"
-      [[ $__DEV ]] && $__devtxt"Value: $value"
+      verbose "Option: $option"
+      verbose "Value: $value"
 
       if [[ "$option" == "name" ]]; then
         s_appname="$value"
@@ -72,9 +67,9 @@ __gsopts() {
 }
 __gscfg() {
   rwrite() {
-    [[ $__DEV ]] && $__devtxt"Setting $rule"
+    verbose "Setting $rule"
     sed -i -e "s/$rule=$oldvalue/$rule=$newvalue/" $cfg
-    $__systxt"Updated rule $rule from $oldvalue to $newvalue!"
+    log "Updated rule $rule from $oldvalue to $newvalue!"
   }
   local cfg="$prgroot/.cfg"
   while [[ $1 ]]; do
@@ -84,8 +79,8 @@ __gscfg() {
       local newvalue="`echo "$1" | cut -d '=' -f2`"
       case "$rule" in
         type )
-          if [[ ! "${newvalue,,}" =~ ${v_lists[this]} ]]; then
-            $__errtxt"Type value must be Bash, Node, or Python!"
+          if [[ ! "${newvalue,,}" =~ ${lists[types]} ]]; then
+            error "Type value must be Bash, Node, or Python!"
           else
             rwrite
           fi
@@ -95,21 +90,21 @@ __gscfg() {
           ;;
       esac
     elif [[ $1 == 'list' ]]; then
-      $__systxt"Current Settings:"
+      log "Current Settings:"
       cat $cfg
       return
     elif [[ $1 == 'RESET' ]]; then
       __args --reset-cfg
       return
     else
-      $__systxt"Rule: `cat $cfg | grep "\b$1\b" || echo "No Rule Found!"`"
+      log "Rule: `cat $cfg | grep "\b$1\b" || echo "No Rule Found!"`"
     fi
   shift; done
 }
 
 # Functionality
 __mknode() {
-  [[ `command -v npm || command -v node` ]] || ( $__errtxt"NodeJS Not Installed!" >&2 && exit )
+  [[ `command -v npm || command -v node` ]] || ( error "NodeJS Not Installed!" && exit )
   __opts # Process general options
 
   # Process Node-specific options
@@ -123,9 +118,9 @@ __mknode() {
     local db="${1:0:1}"
     local proc="${1:1:1}"
     local tmpeng="${1:2:1}"
-    [ $__DEV ] && $__devtxt"db: $db"
-    [ $__DEV ] && $__devtxt"proc: $proc"
-    [ $__DEV ] && $__devtxt"tmpeng: $tmpeng"
+    verbose "db: $db"
+    verbose "proc: $proc"
+    verbose "tmpeng: $tmpeng"
     case $db in
       M )
         pkginstallstr="${pkginstallstr}mongoose "
@@ -166,7 +161,7 @@ __mknode() {
   [ ! -z "$pkginstallstr" ] && echo "Installing packages..." && ( npm i $pkginstallstr )>>/dev/null && echo "Packages installed!"
 }
 __mkpy() {
-  if [[ ! `command -v python` && ! `command -v python3` ]]; then $__errtxt"Python Not Installed!"; exit; fi
+  if [[ ! `command -v python` && ! `command -v python3` ]]; then error "Python Not Installed!"; exit; fi
   __opts
 
   source "$py_assets/main.hdf" # __PYAPP
@@ -176,8 +171,8 @@ __mkpy() {
   chmod u+x "$s_apploc/$s_appname.py"
 
   # If we got here, we succeeded
-  $__systxt"Successfully made app $s_appname in location $s_apploc!"
-  $__systxt"Refer to documentation in clapp (clapp --docs) on further setup!"
+  log "Successfully made app $s_appname in location $s_apploc!"
+  log "Refer to documentation in clapp (clapp --docs) on further setup!"
 }
 __mksh() {
   # Process app options and properties
@@ -208,8 +203,8 @@ __mksh() {
   chmod u+x "$s_apploc/install"
 
   # If we got here, we succeeded
-  $__systxt"Successfully made app $s_appname in location $s_apploc!"
-  $__systxt"Refer to documentation in clapp (clapp --docs) on further setup!"
+  log "Successfully made app $s_appname in location $s_apploc!"
+  log "Refer to documentation in clapp (clapp --docs) on further setup!"
 }
 
 # Parsing
@@ -217,10 +212,10 @@ __mksh() {
 # Setting name, type, or location in options will override
 __opts() {
   # Begin generating folders and files
-  [ -d "$s_apploc" ] && $__errtxt"App with that name already exists!" >&2 && exit
+  [ -d "$s_apploc" ] && error "App with that name already exists!" && exit
 
   __srced=`[ ${s_appopts[src]} ] && echo ${s_appname,,}/src || echo ${s_appname,,}`
-  $__systxt"Generating $s_appname in location $s_apploc..."
+  log "Generating $s_appname in location $s_apploc..."
   [ $__DEV ] && ( $__devtxt"Options: "; __gsopts )
   mkdir "$s_apploc"
 
@@ -234,7 +229,7 @@ __opts() {
         ;;
       repo )
         cd "$s_apploc" && git init >>/dev/null && echo "# $s_appname" >> readme.md
-        $__systxt"Initialized app as repo! Don't forget to run \`git commit -a -m \"Creation of $s_appname!\"\`"
+        log "Initialized app as repo! Don't forget to run \`git commit -a -m \"Creation of $s_appname!\"\`"
         cd $s_usercwd
         ;;
     esac
@@ -246,18 +241,18 @@ __args() {
     case $1 in
       -t | --type )
         shift
-        [ $__DEV ] && $__devtxt"Setting app type to $1"
-        [ ! -z "$1" ] && __gstype "$1" || ( $__errtxt"Must supply value to argument!" >&2; exit )
+        verbose "Setting app type to $1"
+        [ ! -z "$1" ] && __gstype "$1" || ( error "Must supply value to argument!"; exit )
         ;;
       -n | --name )
         shift
-        [ $__DEV ] && $__devtxt"Setting app name to $1"
-        [ ! -z "$1" ] && __gsname "$1" || ( $__errtxt"Must supply value to argument!" >&2; exit )
+        verbose "Setting app name to $1"
+        [ ! -z "$1" ] && __gsname "$1" || ( error "Must supply value to argument!"; exit )
         ;;
       -l | --location )
         shift
-        [ $__DEV ] && $__devtxt"Setting app location to $1"
-        [ ! -z "$1" ] && __gsloc "$1" || ( $__errtxt"Must supply value to argument!" >&2; exit )
+        verbose "Setting app location to $1"
+        [ ! -z "$1" ] && __gsloc "$1" || ( error "Must supply value to argument!"; exit )
         ;;
       -o | --options )
         # This should be last, otherwise the function may fail, make sure next 2 args are options
@@ -265,13 +260,13 @@ __args() {
         if [[ "$1" =~ "=" ]]; then
           __gsopts "$@"
         else
-          $__errtxt"'-o' must only be followed by options, if you want to pass other arguments, put them before '-o'!" >&2
+          error "'-o' must only be followed by options, if you want to pass other arguments, put them before '-o'!"
           exit
         fi
         ;;
       -C | --config )
         shift
-        [ ! -z "$1" ] && __gscfg "$@" || ( $__errtxt"Must supply config option to get/set or 'list'!" >&2; exit )
+        [ ! -z "$1" ] && __gscfg "$@" || ( error "Must supply config option to get/set or 'list'!"; exit )
         exit;;
       --reset-cfg )
         echo "Resetting CLApp to default configuration..."
@@ -285,7 +280,7 @@ __args() {
         exit;;
       -u | --update )
         # Clapp does this by default, this ensures clapp doesn't continue execution
-        [[ `diff $HOME/bin/clapp $(find $HOME -type d -name clapp)/clapp` ]] || $__systxt"CLApp up to date!"
+        [[ `diff $HOME/bin/clapp $(find $HOME -type d -name clapp)/clapp` ]] || log "CLApp up to date!"
         exit;;
       --docs )
         shift
@@ -298,14 +293,14 @@ __args() {
         __DEV=true
         ;;
       * )
-        $__errtxt"Option '$1' not found!" >&2
+        error "Option '$1' not found!"
         exit;;
     esac
     shift
   done;
-  [ $__DEV ] && $__devtxt"Type: `__gstype`"
-  [ $__DEV ] && $__devtxt"Name: `__gsname`"
-  [ $__DEV ] && $__devtxt"Path: `__gsloc`"
+  verbose "Type: `__gstype`"
+  verbose "Name: `__gsname`"
+  verbose "Path: `__gsloc`"
 }
 __quick() {
   # CLApp's shorthand style
@@ -316,7 +311,7 @@ __quick() {
   local opts=""
 
   while [[ -n "$1" ]]; do
-    if [[ "$1" =~ ${v_lists[this]} ]]; then
+    if [[ "$1" =~ ${lists[types]} ]]; then
       type="$1"
     elif [[ "$1" =~ '/' ]]; then
       loc="$1"

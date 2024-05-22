@@ -17,6 +17,9 @@
 
 - System-install variant for when you want any user to access the app
 - Cross-platform compatibility
+  - Add quotes to all variables
+  - Use param-exp notation where possible for better variable interpolation
+  - Adjust Bash assets to reflect compatible app style (mimic CLApp)
 
 # Bugs
 ## Key:

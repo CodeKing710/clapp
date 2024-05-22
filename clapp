@@ -66,7 +66,7 @@ clapp() {
 }
 
 # Run container
-clapp $@
+clapp "$@"
 
 # Cleanup when sourced (should not be sourced!)
 # unset clapp __args __mknode __mkpy __mksh __opts __gstype __gsname __gsloc __gsopts __errtxt __systxt __devtxt __cwd __srced s_appname s_apptype s_apploc s_appopts autoupdate repo __ALT __CMD
