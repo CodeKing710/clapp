@@ -9,8 +9,8 @@ install() {
   [[ ! -e "$HOME"/.clapp/.cfg ]] && ( cp -f "$repo"/.clapp/.cfg "$HOME"/.clapp/.cfg || return )
   cp -f "$repo"/.clapp/help "$HOME"/.clapp/help || return
   cp -f "$repo"/.clapp/version "$HOME"/.clapp/version || return
-  cp -f -r "$repo"/.clapp/assets "$HOME"/.clapp/assets || return
-  cp -f -r "$repo"/.clapp/docs "$HOME"/.clapp/docs || return
+  cp -f -r "$repo"/.clapp/assets "$HOME"/.clapp/ || return
+  cp -f -r "$repo"/.clapp/docs "$HOME"/.clapp/ || return
 }
 
 install

@@ -12,7 +12,7 @@ __srced="${s_appname,,}"
 declare -A s_appopts
 declare -A v_lists # Setup for bash clapp apps
 lists[types]="^(bash|sh|py|python|node|js|javascript)$"
-__cwd=`pwd`
+__cwd=$(pwd)
 
 error() { echo -e '\e[0;1;31m[ERROR]\e[0;0;0m '"${1}" &>2; }
 verbose() { [[ "$__DEV" == "true" ]] && echo -e '\e[0;1;95m[CLAppDev]\e[0;0;0m '"${1}"; }
@@ -47,7 +47,7 @@ __gsopts() {
         echo "$key: ${s_appopts[$key]}"
     done
   else
-    for arg in $@; do
+    for arg in "$@"; do
       local option="`echo "$arg" | cut -d '=' -f1`"
       local value="`echo "$arg" | cut -d '=' -f2`"
       verbose "Option: $option"
@@ -66,17 +66,17 @@ __gsopts() {
   fi
 }
 __gscfg() {
+  local cfg="$prgroot/.cfg"
   rwrite() {
     verbose "Setting $rule"
-    sed -i -e "s/$rule=$oldvalue/$rule=$newvalue/" $cfg
+    sed -i -e "s/$rule=$oldvalue/$rule=$newvalue/" "$cfg"
     log "Updated rule $rule from $oldvalue to $newvalue!"
   }
-  local cfg="$prgroot/.cfg"
   while [[ $1 ]]; do
     if [[ $1 =~ '=' ]]; then
-      local rule="`echo "$1" | cut -d '=' -f1`"
-      local oldvalue="`cat $cfg | grep "$rule" | cut -d '=' -f2`"
-      local newvalue="`echo "$1" | cut -d '=' -f2`"
+      local rule="$(echo "$1" | cut -d '=' -f1)"
+      local oldvalue="$(cat "$cfg" | grep "$rule" | cut -d '=' -f2)"
+      local newvalue="$(echo "$1" | cut -d '=' -f2)"
       case "$rule" in
         type )
           if [[ ! "${newvalue,,}" =~ ${lists[types]} ]]; then
@@ -89,22 +89,22 @@ __gscfg() {
           rwrite
           ;;
       esac
-    elif [[ $1 == 'list' ]]; then
+    elif [[ "$1" == 'list' ]]; then
       log "Current Settings:"
       cat $cfg
       return
-    elif [[ $1 == 'RESET' ]]; then
+    elif [[ "$1" == 'RESET' ]]; then
       __args --reset-cfg
       return
     else
-      log "Rule: `cat $cfg | grep "\b$1\b" || echo "No Rule Found!"`"
+      log "Rule: `cat "$cfg" | grep ^"$1"$ || echo "No Rule Found!"`"
     fi
   shift; done
 }
 
 # Functionality
 __mknode() {
-  [[ `command -v npm || command -v node` ]] || ( error "NodeJS Not Installed!" && exit )
+  [[ $(command -v npm || command -v node) ]] || ( error "NodeJS Not Installed!" && exit )
   __opts # Process general options
 
   # Process Node-specific options
@@ -158,10 +158,10 @@ __mknode() {
   cd "$s_apploc"
   echo -e "#!/bin/env node\n\n$__JSAPP" >> index.js
   npm init -y >>/dev/null
-  [ ! -z "$pkginstallstr" ] && echo "Installing packages..." && ( npm i $pkginstallstr )>>/dev/null && echo "Packages installed!"
+  [ ! -z "$pkginstallstr" ] && echo "Installing packages..." && ( npm i "$pkginstallstr" )>>/dev/null && echo "Packages installed!"
 }
 __mkpy() {
-  if [[ ! `command -v python` && ! `command -v python3` ]]; then error "Python Not Installed!"; exit; fi
+  if [[ ! $(command -v python) && ! $(command -v python3) ]]; then error "Python Not Installed!"; exit; fi
   __opts
 
   source "$py_assets/main.hdf" # __PYAPP
@@ -177,15 +177,15 @@ __mkpy() {
 __mksh() {
   # Process app options and properties
   __opts
-  [ ${s_appopts[altargfunc]} ] && __ALT=true
-  [ ${s_appopts[commands]} ] && __CMD=true
+  [[ -n "${s_appopts[altargfunc]}" ]] && __ALT=true
+  [[ -n "${s_appopts[commands]}" ]] && __CMD=true
 
   # Pull HDFs (__SHINSTALL, __SHAPP, __SHLIB)
   source "$sh_assets/install.hdf"
   source "$sh_assets/main.hdf"
   source "$sh_assets/lib.hdf"
   # Generate based on all-in-one
-  if [ ${s_appopts[allone]} ]; then
+  if [[ -n "${s_appopts[allone]}" ]]; then
     echo -e "#!/bin/bash\n\nversion=\"${s_appname} - v1.0.0\"\nhelp=\"\"\n\n$__SHLIB\n$__SHAPP\nunset version help" >> "$s_apploc/${s_appname,,}"
     chmod u+x "$s_apploc/${s_appname,,}"
   else
@@ -216,12 +216,12 @@ __opts() {
 
   __srced=`[ ${s_appopts[src]} ] && echo ${s_appname,,}/src || echo ${s_appname,,}`
   log "Generating $s_appname in location $s_apploc..."
-  [ $__DEV ] && ( $__devtxt"Options: "; __gsopts )
+  verbose "Options: $(__gsopts)"
   mkdir "$s_apploc"
 
   # Parse general options
   for key in "${!s_appopts[@]}"; do
-    case $key in
+    case "$key" in
       # Boolean
       src )
         mkdir "$s_apploc/src"
@@ -230,7 +230,7 @@ __opts() {
       repo )
         cd "$s_apploc" && git init >>/dev/null && echo "# $s_appname" >> readme.md
         log "Initialized app as repo! Don't forget to run \`git commit -a -m \"Creation of $s_appname!\"\`"
-        cd $s_usercwd
+        cd "$__cwd"
         ;;
     esac
   done
