@@ -6,16 +6,15 @@ __FRONT=`cat << LIB
 # $s_appname's Functions and Variables
 
 # Vars
-__cwd=\\\`pwd\\\`
+__cwd=\\\$(pwd)
 prgroot="\\\$HOME/.${s_appname,,}"
 
 declare -A lists # For any lists your app may need as reference
-lists[cmd]="'config' 'help' 'version'" # To be interpolated as array later
 
 # Config
 __loadcfg() {
 	local cfg="\\\$prgroot/.cfg"
-	# Write config variables below like so: name=\\\`cat \\\$cfg | grep 'name' | cut -d '=' -f2\\\`
+	# Write config variables below like so: name=\\\$(cat "\\\$cfg" | grep 'name' | cut -d '=' -f2)
 }
 # Config vars will be set via function in-case of needing reloaded
 __loadcfg
@@ -23,21 +22,21 @@ __loadcfg
 # Funcs
 __cfg() {
 	local cfg="\\\$prgroot/.cfg"
-	while [[ \\\$1 ]]; do
-		if [[ \\\$1 =~ '=' ]]; then
-			local rule="\\\`echo "\\\$1" | cut -d '=' -f1\\\`"
-			local oldvalue="\\\`cat \\\$cfg | grep "\\\$rule" | cut -d '=' -f2\\\`"
-			local newvalue="\\\`echo "\\\$1" | cut -d '=' -f2\\\`"
-			sed -i -e "s/\\\$rule=\\\$oldvalue/\\\$rule=\\\$newvalue/" \\\$cfg
+	while [[ -n "\\\$1" ]]; do
+		if [[ "\\\$1" =~ '=' ]]; then
+			local rule="\\\$(echo "\\\$1" | cut -d '=' -f1)"
+			local oldvalue="\\\$(cat "\\\$cfg" | grep "\\\$rule" | cut -d '=' -f2)"
+			local newvalue="\\\$(echo "\\\$1" | cut -d '=' -f2)"
+			sed -i -e "s/\\\$rule=\\\$oldvalue/\\\$rule=\\\$newvalue/" "\\\$cfg"
 			echo "Updated rule \\\$rule from \\\$oldvalue to \\\$newvalue!"
-		elif [[ \\\$1 == 'list' ]]; then
+		elif [[ "\\\$1" == 'list' ]]; then
 			echo "Current Settings:"
-			cat \\\$cfg
+			cat "\\\$cfg"
 			return
-		elif [[ \\\$1 == 'RESET' ]]; then
-			__args --reset
+		elif [[ "\\\$1" == 'RESET' ]]; then
+			__args --reset-cfg
 		fi
-		echo "Rule: \\\`cat \\\$cfg | grep "\\b\\\$1\\b" || echo "No Rule Found!"\\\`"
+		echo "Rule: \\\$(cat "\\\$cfg" | grep "\\\\b\\\$1\\\\b" || echo "No Rule Found!")"
 	shift; done
 }
 LIB
@@ -51,7 +50,7 @@ __args() {
 		case "\\\$1" in
 			-C | --config )
 				shift
-				[ ! -z "$1" ] && __cfg "\\\$@" || ( error "Must supply rule or 'list'!"; exit )
+				[ ! -z "\\\$1" ] && __cfg "\\\$@" || ( error "Must supply rule or 'list'!"; exit )
 				exit;;
 			--reset-cfg )
 				echo "Resetting ${s_appname} to default configuration..."
@@ -88,23 +87,23 @@ __args() {
 		#   return;;
 		case "\\\$1" in
 			-C | --config )
-				shift; [ ! -z "$1" ] && __cfg "\\\$@" || ( $__errtxt"Must supply rule or 'list'!" >&2; exit )
+				shift; [ ! -z "\\\$1" ] && __cfg "\\\$@" || ( error "Must supply rule or 'list'!"; exit )
 				return;; # So the function doesn't endlessly recurse
 			--reset-cfg )
 				echo "Resetting ${s_appname} to default configuration..."
 				cp -rf \\\$(find \\\$HOME -type d -name ${s_appname,,})/.${s_appname,,} \\\$HOME && echo "${s_appname}'s config has been reset!" || echo "Failed to reset defaults!"
 				exit;;
 			-\\? | -h | --help )
-				cat \\\$prgroot/help
+				cat "\\\$prgroot/help"
 				exit;;
 			-v | --version )
-				cat \\\$prgroot/version
+				cat "\\\$prgroot/version"
 				exit;;
 			-V | --verbose )
 				VERBOSE=true
 				;;
 			* ) # Catch-all
-				cat \\\$prgroot/help | head -1
+				cat "\\\$prgroot/help" | head -1
 				echo "\\"\\\$1\\" is not an argument!"
 				exit;;
 		esac
@@ -113,6 +112,7 @@ __args() {
 ALT
 `
 __CMDFUNC=`cat << CMD
+lists[cmd]="^(config|help|version)$" # To be tested against
 __cmds() {
 	# Process commands
 	# Adjust the args command accordingly if desired
@@ -121,16 +121,16 @@ __cmds() {
 		# Otherwise use 'exit;;' when you want to bail out due to erroneous behaviour
 		case "\\\${1,,}" in
 			config )
-				shift; [ ! -z "$1" ] && __cfg "\\\$@" || ( $__errtxt"Must supply rule or 'list'!" >&2; exit )
+				shift; [ ! -z "\\\$1" ] && __cfg "\\\$@" || ( error "Must supply rule or 'list'!"; exit )
 				return;; # So the function doesn't endlessly recurse
 			help )
-				cat \\\$prgroot/help
+				cat "\\\$prgroot/help"
 				exit;;
-			-v | version )
-				cat \\\$prgroot/version
+			version )
+				cat "\\\$prgroot/version"
 				exit;;
 			* ) # Catch-all
-				cat \\\$prgroot/help | head -1
+				cat "\\\$prgroot/help" | head -1
 				echo "\\"\\\$1\\" is not an argument!"
 				exit;;
 		esac
@@ -139,17 +139,9 @@ __cmds() {
 CMD
 `
 __BACK=`cat << BAK
-error() {
-	local msg="\\\$1"
-
-	echo -e '\e[0;1;31m[ERROR]\e[0;0;0m '"\\\$msg" >&2
-}
-
-verbose() {
-	local msg="\\\$1"
-
-	[[ \\\$VERBOSE ]] && echo -e '\e[0;1;35m[VERBOSE]\e[0;0;0m '"\\\$msg"
-}
+error() { echo -e '\e[0;1;31m[ERROR]\e[0;0;0m '"\\\$msg" >&2; }
+verbose() { [[ \\\$VERBOSE ]] && echo -e '\e[0;1;35m[VERBOSE]\e[0;0;0m '"\\\$msg"; }
+log() { echo -e '\e[0;1;32m[${s_appname^^}]\e[0;0;0m '"\\\$msg"; }
 BAK
 `
 

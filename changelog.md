@@ -1,6 +1,6 @@
 # CLApp Changelog
 
-# What's New (v1.4.1)
+# What's New (v1.4.4)
 
 - Support for making Python apps
 - Support for making Node apps
@@ -12,14 +12,15 @@
 - Alternative arg handling functions
 - Command mode option
 - Under the hood improvements
+- Cross compatibility good so far
 
 # What's Next (v1.5.0)
 
 - System-install variant for when you want any user to access the app
 - Cross-platform compatibility
-  - Add quotes to all variables
-  - Use param-exp notation where possible for better variable interpolation
-  - Adjust Bash assets to reflect compatible app style (mimic CLApp)
+  - [DONE] Add quotes to all variables
+  - [DONE] Use param-exp notation where possible for better variable interpolation
+  - [DONE] Adjust Bash assets to reflect compatible app style (mimic CLApp)
 
 # Bugs
 ## Key:

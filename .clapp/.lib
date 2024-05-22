@@ -14,7 +14,7 @@ declare -A v_lists # Setup for bash clapp apps
 lists[types]="^(bash|sh|py|python|node|js|javascript)$"
 __cwd=$(pwd)
 
-error() { echo -e '\e[0;1;31m[ERROR]\e[0;0;0m '"${1}" &>2; }
+error() { echo -e '\e[0;1;31m[ERROR]\e[0;0;0m '"${1}" >&2; }
 verbose() { [[ "$__DEV" == "true" ]] && echo -e '\e[0;1;95m[CLAppDev]\e[0;0;0m '"${1}"; }
 log() { echo -e '\e[0;1;36m[CLApp]\e[0;0;0m '"${1}"; }
 
