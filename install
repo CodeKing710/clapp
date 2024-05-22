@@ -4,7 +4,9 @@
 install() {
   local repo="$(find "$HOME" -type d -name clapp 2>devnull | head -1)"
   cp -f "$repo"/clapp "$HOME"/bin/clapp || return
+  [[ ! -e "$HOME"/.clapp ]] && mkdir "$HOME"/.clapp
   cp -f "$repo"/.clapp/.lib "$HOME"/.clapp/.lib || return
+  [[ ! -e "$HOME"/.clapp/.cfg ]] && ( cp -f "$repo"/.clapp/.cfg "$HOME"/.clapp/.cfg || return )
   cp -f "$repo"/.clapp/help "$HOME"/.clapp/help || return
   cp -f "$repo"/.clapp/version "$HOME"/.clapp/version || return
   cp -f -r "$repo"/.clapp/assets "$HOME"/.clapp/assets || return
