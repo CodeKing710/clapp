@@ -179,6 +179,7 @@ __mksh() {
   __opts
   [[ -n "${s_appopts[altargfunc]}" ]] && __ALT=true
   [[ -n "${s_appopts[commands]}" ]] && __CMD=true
+  [[ -n "${s_appopts[states]}" ]] && { unset __CMD __ALT; __STATE=true } # Can't have states with original options processing functions
 
   # Pull HDFs (__SHINSTALL, __SHAPP, __SHLIB)
   source "$sh_assets/install.hdf"
