@@ -278,7 +278,7 @@ __args() {
       -v | --version )
         echo "`cat $HOME/.clapp/version`"
         exit;;
-      -u | --update )
+      --update )
         # Clapp does this by default, this ensures clapp doesn't continue execution
         [[ `diff $HOME/bin/clapp $(find $HOME -type d -name clapp)/clapp` ]] || log "CLApp up to date!"
         exit;;
@@ -304,7 +304,6 @@ __args() {
 }
 __quick() {
   # CLApp's shorthand style
-  # clapp <name> <type> [location] [options...]
   local name="$1"; shift
   local type="${s_apptype,,}"
   local loc=""

@@ -1,4 +1,5 @@
-Usage: clapp <-n> <appname> [-t] <bash|node|python> [-l] <applocation> [-o ...]
+Usage: clapp <name> [type] [location] [options ...]
+Alternate Usage: clapp <-n> <appname> [-t] <bash|node|python> [-l] <applocation> [-o ...]
 
 Options:
 
@@ -8,15 +9,42 @@ Options:
 
   -l | --location   Sets the path/location of the app
 
-  -o | --options    Sets the options for the app.
+  -o | --options    Sets the options for the app. All options are boolean, unset options are considered false.
                     Available Options:
+                    - repo: Makes app a git repo
+                    - src: Puts apps contents into src folder within app folder
+                    
+                    Bash-Specific Options:
+                    - allone: Puts lib and main program code into one file
+                    - commands: Adds function to parse commands alongside arguments
+                    - altargfunc: Utilize an alternative argument function that passes around the argument list instead delegating and returning
+                                  (adds high possibility of fork bombing your app, just be careful)
+
+  -C | --config     Gets or sets rules in the configuration.
+                    Available Options:
+                    - list: Shows current configuration
+                    - autoup: Enables/disables autoupdates
+                    - type: Default app type
 
   -V | --verbose    Detailed output on CLApp's operations
-
-  -u | --update     For updating CLApp if you have auto-update disabled,
-                    or to ensure CLApp is up to date before continuing use
-                    since it will only run updates then exit
     
   -h | --help       Shows this page
 
   -v | --version    Shows current version of clapp
+
+Special Options:
+
+  --update
+      For updating CLApp if you have auto-update disabled,
+      or to ensure CLApp is up to date before continuing use
+      since it will only run updates then exit
+
+  --reset-cfg
+      Resets CLApp's configuration to default settings
+
+  --docs
+      Opens CLApp's documentation in your default browser
+
+  
+
+For more information and available commands, visit https://github.com/CodeKing710/clapp#readme.
