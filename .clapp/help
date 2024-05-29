@@ -19,6 +19,7 @@ Options:
                     - commands: Adds function to parse commands alongside arguments
                     - altargfunc: Utilize an alternative argument function that passes around the argument list instead delegating and returning
                                   (adds high possibility of fork bombing your app, just be careful)
+                    - states: Utilizes a state-based processing architecture. CANNOT BE USED WITH COMMANDS OR ALTARGFUNC!
 
   -C | --config     Gets or sets rules in the configuration.
                     Available Options:

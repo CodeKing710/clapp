@@ -1,16 +1,16 @@
 #!/bin/bash
 # SOURCE THIS FILE FOR HEREDOC INTERPOLATION
-__SHINSTALL=`cat << INST
+__SHINSTALL=$(cat << INST
 #!/bin/bash
 
 # $s_appname's installer
 install() {
-	local repo=\\\$(find "\\\$HOME" -type d -name $__srced 2>/dev/null | head -1)
-	cp "\\\$repo"/${s_appname,,} "\\\$HOME"/bin || return
-	cp -r "\\\$repo"/.${s_appname,,} "\\\$HOME"/ || return
+	local repo=\$(find "\$HOME" -type d -name $__srced 2>/dev/null | head -1)
+	cp "\$repo"/${s_appname,,} "\$HOME"/bin || return
+	cp -r "\$repo"/.${s_appname,,} "\$HOME"/ || return
 	echo "$s_appname installed!"
 }
 
 install
 INST
-`
+)

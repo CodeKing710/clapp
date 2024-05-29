@@ -2,81 +2,81 @@
 # SOURCE THIS FILE FOR HEREDOC INTERPOLATION
 
 # Normal
-__FRONTDOC=`cat << LIB
+__FRONTDOC=$(cat << LIB
 # $s_appname's Functions and Variables
 
 # Vars
-__cwd=\\\$(pwd)
-prgroot="\\\$HOME/.${s_appname,,}"
+__cwd=\$(pwd)
+prgroot="\$HOME/.${s_appname,,}"
 
 declare -A lists # For any lists your app may need as reference
 
 # Config
 __loadcfg() {
-	local cfg="\\\$prgroot/.cfg"
-	# Write config variables below like so: name=\\\$(cat "\\\$cfg" | grep 'name' | cut -d '=' -f2)
+	local cfg="\$prgroot/.cfg"
+	# Write config variables below like so: name=\$(cat "\$cfg" | grep 'name' | cut -d '=' -f2)
 }
 # Config vars will be set via function in-case of needing reloaded
 __loadcfg
 
 # Funcs
 __cfg() {
-	local cfg="\\\$prgroot/.cfg"
-	while [[ -n "\\\$1" ]]; do
-		if [[ "\\\$1" =~ '=' ]]; then
-			local rule="\\\$(echo "\\\$1" | cut -d '=' -f1)"
-			local oldvalue="\\\$(cat "\\\$cfg" | grep "\\\$rule" | cut -d '=' -f2)"
-			local newvalue="\\\$(echo "\\\$1" | cut -d '=' -f2)"
-			sed -i -e "s/\\\$rule=\\\$oldvalue/\\\$rule=\\\$newvalue/" "\\\$cfg"
-			echo "Updated rule \\\$rule from \\\$oldvalue to \\\$newvalue!"
-		elif [[ "\\\$1" == 'list' ]]; then
+	local cfg="\$prgroot/.cfg"
+	while [[ -n "\$1" ]]; do
+		if [[ "\$1" =~ '=' ]]; then
+			local rule="\$(echo "\$1" | cut -d '=' -f1)"
+			local oldvalue="\$(cat "\$cfg" | grep "\$rule" | cut -d '=' -f2)"
+			local newvalue="\$(echo "\$1" | cut -d '=' -f2)"
+			sed -i -e "s/\$rule=\$oldvalue/\$rule=\$newvalue/" "\$cfg"
+			echo "Updated rule \$rule from \$oldvalue to \$newvalue!"
+		elif [[ "\$1" == 'list' ]]; then
 			echo "Current Settings:"
-			cat "\\\$cfg"
+			cat "\$cfg"
 			return
-		elif [[ "\\\$1" == 'RESET' ]]; then
+		elif [[ "\$1" == 'RESET' ]]; then
 			__args --reset-cfg
 		fi
-		echo "Rule: \\\$(cat "\\\$cfg" | grep "\\\\b\\\$1\\\\b" || echo "No Rule Found!")"
+		echo "Rule: \$(cat "\$cfg" | grep ^\$1$ || echo "No Rule Found!")"
 	shift; done
 }
 LIB
 )
 __BACKDOC=$(cat << BAK
-error() { echo -e '\e[0;1;31m[ERROR]\e[0;0;0m '"\\\$msg" >&2; }
-verbose() { [[ \\\$VERBOSE ]] && echo -e '\e[0;1;35m[VERBOSE]\e[0;0;0m '"\\\$msg"; }
-log() { echo -e '\e[0;1;32m[${s_appname^^}]\e[0;0;0m '"\\\$msg"; }
+error() { echo -e '\e[0;1;31m[ERROR]\e[0;0;0m '"\$msg" >&2; }
+verbose() { [[ \$VERBOSE ]] && echo -e '\e[0;1;35m[VERBOSE]\e[0;0;0m '"\$msg"; }
+log() { echo -e '\e[0;1;32m[${s_appname^^}]\e[0;0;0m '"\$msg"; }
 BAK
 )
 __ARGFUNCDOC=$(cat << ARG
 __args() {
 	# Process args
-	while [[ "\\\$1" =~ '-' ]]; do
+	while [[ "\$1" =~ '-' ]]; do
 		# End case statements with 'exit;;' to ensure program only runs that argument
 		# Otherwise use 'exit;;' when you want to bail out due to erroneous behaviour
-		case "\\\$1" in
+		case "\$1" in
 			-C | --config )
 				shift
-				[[ ! -z "\\\$1" ]] && __cfg "\\\$@" || ( error "Must supply rule or 'list'!"; exit )
+				[[ ! -z "\$1" ]] && __cfg "\$@" || ( error "Must supply rule or 'list'!"; exit )
 				exit;;
 			--reset-cfg )
 				echo "Resetting ${s_appname} to default configuration..."
-				cp -rf \\\$(find "\\\$HOME" -type d -name ${s_appname,,} 2>/dev/null | head -1)/.${s_appname,,} "\\\$HOME/" && echo "${s_appname}'s config has been reset!" || echo "Failed to reset defaults!"
+				cp -rf \$(find "\$HOME" -type d -name ${s_appname,,} 2>/dev/null | head -1)/.${s_appname,,} "\$HOME/" && echo "${s_appname}'s config has been reset!" || echo "Failed to reset defaults!"
 				exit;;
 			-\\? | -h | --help )
-				cat "\\\$prgroot/help"
+				cat "\$prgroot/help"
 				exit;;
 			-v | --version )
-				cat "\\\$prgroot/version"
+				cat "\$prgroot/version"
 				exit;;
 			-V | --verbose )
 				VERBOSE=true
 				;;
 			* ) # Catch-all
-				if [[ \\\$(type -t __cmds) == "function" && ! "\\\$1" =~ '-' ]]; then
-					__cmds "\\\$@"
+				if [[ \$(type -t __cmds) == "function" && ! "\$1" =~ '-' ]]; then
+					__cmds "\$@"
 				else
-					cat "\\\$prgroot/help" | head -1
-					echo "\\"\\\$1\\" is not an argument!"
+					cat "\$prgroot/help" | head -1
+					echo "\\"\$1\\" is not an argument!"
 					exit
 				fi
 				return;;
@@ -88,37 +88,37 @@ ARG
 __ALTFUNCDOC=$(cat << ALT
 __args() {
 	# Process args
-	while [[ "\\\$1" =~ '-' ]]; do
+	while [[ "\$1" =~ '-' ]]; do
 		# End case statements with 'return;;' to allow for arglist to be passed around and continue execution
 		# Otherwise use 'exit;;' when you want to bail out due to erroneous behaviour
 		# Each statement should look like this:
 		# <ARG> | <ALTARGVERSION> ); shift
 		#   DATA VALIDATION
-		#   <FUNC> "\\\$@"
+		#   <FUNC> "\$@"
 		#   return;;
-		case "\\\$1" in
+		case "\$1" in
 			-C | --config )
-				shift; [[ ! -z "\\\$1" ]] && __cfg "\\\$@" || ( error "Must supply rule or 'list'!"; exit )
+				shift; [[ ! -z "\$1" ]] && __cfg "\$@" || ( error "Must supply rule or 'list'!"; exit )
 				return;; # So the function doesn't endlessly recurse
 			--reset-cfg )
 				echo "Resetting ${s_appname} to default configuration..."
-				cp -rf \\\$(find "\\\$HOME" -type d -name ${s_appname,,} 2>/dev/null | head -1)/.${s_appname,,} "\\\$HOME/" && echo "${s_appname}'s config has been reset!" || echo "Failed to reset defaults!"
+				cp -rf \$(find "\$HOME" -type d -name ${s_appname,,} 2>/dev/null | head -1)/.${s_appname,,} "\$HOME/" && echo "${s_appname}'s config has been reset!" || echo "Failed to reset defaults!"
 				exit;;
 			-\\? | -h | --help )
-				cat "\\\$prgroot/help"
+				cat "\$prgroot/help"
 				exit;;
 			-v | --version )
-				cat "\\\$prgroot/version"
+				cat "\$prgroot/version"
 				exit;;
 			-V | --verbose )
 				VERBOSE=true
 				;;
 			* ) # Catch-all
-				if [[ \\\$(type -t __cmds) == "function" && ! "\\\$1" =~ '-' ]]; then
-					__cmds "\\\$@"
+				if [[ \$(type -t __cmds) == "function" && ! "\$1" =~ '-' ]]; then
+					__cmds "\$@"
 				else
-					cat "\\\$prgroot/help" | head -1
-					echo "\\"\\\$1\\" is not an argument!"
+					cat "\$prgroot/help" | head -1
+					echo "\\"\$1\\" is not an argument!"
 					exit
 				fi
 				return;;
@@ -135,22 +135,22 @@ __cmds() {
 	while [[ true ]]; do
 		# End case statements with 'exit;;' to run just the one command
 		# Otherwise use 'exit;;' when you want to bail out due to erroneous behaviour
-		case "\\\${1,,}" in
+		case "\${1,,}" in
 			config )
-				shift; [ ! -z "\\\$1" ] && __cfg "\\\$@" || ( error "Must supply rule or 'list'!"; exit )
+				shift; [ ! -z "\$1" ] && __cfg "\$@" || ( error "Must supply rule or 'list'!"; exit )
 				return;; # So the function doesn't endlessly recurse
 			help )
-				cat "\\\$prgroot/help"
+				cat "\$prgroot/help"
 				exit;;
 			version )
-				cat "\\\$prgroot/version"
+				cat "\$prgroot/version"
 				exit;;
 			* ) # Catch-all
-				if [[ "\\\$1" =~ '-' ]]; then
-					__args "\\\$@"
+				if [[ "\$1" =~ '-' ]]; then
+					__args "\$@"
 				else
-					cat "\\\$prgroot/help" | head -1
-					echo "\\"\\\$1\\" is not a command!"
+					cat "\$prgroot/help" | head -1
+					echo "\\"\$1\\" is not a command!"
 					exit
 				fi
 				return;;
@@ -169,8 +169,8 @@ states[cfg]="" # Any text within a bool state signifies true, less is better
 lists[cmds]="^()$"
 
 __args() {
-	while [[ -n "\\\$1" ]]; do
-		case "\\\${1,,}" in
+	while [[ -n "\$1" ]]; do
+		case "\${1,,}" in
 			-C | --config )
 				states[cfg]="t"
 				;;
@@ -178,17 +178,17 @@ __args() {
 				VERBOSE=true
 				;;
 			-\\? | --help ) # Not using -h to leave it open for other possible args
-				cat "\\\$prgroot/help"
+				cat "\$prgroot/help"
 				exit;;
 			-v | --version )
-				cat "\\\$prgroot/version"
+				cat "\$prgroot/version"
 				exit;;
 			* ) # Catch-all
-				if [[ "\\\$1" =~ \\\${lists[cmds]} ]]; then
-					__cmds "\\\$1"
+				if [[ "\$1" =~ \${lists[cmds]} ]]; then
+					__cmds "\$1"
 				else
-					cat "\\\$prgroot/help" | head -1
-					error "'\\\$1' is not an argument!"
+					cat "\$prgroot/help" | head -1
+					error "'\$1' is not an argument!"
 					exit
 				fi
 				;;
@@ -196,8 +196,8 @@ __args() {
 	shift; done
 }
 __cmds() {
-	while [[ -n "\\\$1" ]]; do
-		case "\\\${1,,}" in
+	while [[ -n "\$1" ]]; do
+		case "\${1,,}" in
 			^(config)$ )
 				states[cfg]="t"
 				;;
@@ -205,17 +205,17 @@ __cmds() {
 				VERBOSE=true
 				;;
 			^(help)$ ) # Not using -h to leave it open for other possible args
-				cat "\\\$prgroot/help"
+				cat "\$prgroot/help"
 				exit;;
 			^(version)$ )
-				cat "\\\$prgroot/version"
+				cat "\$prgroot/version"
 				exit;;
 			* ) # Catch-all
-				if [[ "\\\$1" =~ ^- ]]; then
-					__args "\\\$1"
+				if [[ "\$1" =~ ^- ]]; then
+					__args "\$1"
 				else
-					cat "\\\$prgroot/help" | head -1
-					error "'\\\$1' is not a command!"
+					cat "\$prgroot/help" | head -1
+					error "'\$1' is not a command!"
 					exit
 				fi
 				;;
@@ -225,5 +225,5 @@ __cmds() {
 STATE
 )
 
-__SHLIB="$([[ "$__STATE" == "true" ]] && echo "${__FRONTDOC}\n${__STATEDOC}\n${__BACKDOC}" || echo "${__FRONTDOC}\n$([[ "$__ALT" == "true" ]] && echo "$__ALTFUNCDOC" || echo "$__ARGFUNCDOC")\n\n$([[ "$__CMD" == "true" ]] && echo "$__CMDFUNCDOC\n")${__BACKDOC}")"
+__SHLIB="$([[ "$__STATE" == "true" ]] && echo "${__FRONTDOC}\n$__STATEDOC\n${__BACKDOC}" || echo "${__FRONTDOC}\n$([[ "$__ALT" == "true" ]] && echo "$__ALTFUNCDOC" || echo "$__ARGFUNCDOC")\n\n$([[ "$__CMD" == "true" ]] && echo "$__CMDFUNCDOC\n")${__BACKDOC}")"
 # EOF
