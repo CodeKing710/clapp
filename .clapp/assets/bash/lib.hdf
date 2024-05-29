@@ -2,7 +2,7 @@
 # SOURCE THIS FILE FOR HEREDOC INTERPOLATION
 
 # Normal
-__FRONT=`cat << LIB
+__FRONTDOC=`cat << LIB
 # $s_appname's Functions and Variables
 
 # Vars
@@ -40,8 +40,14 @@ __cfg() {
 	shift; done
 }
 LIB
-`
-__ARGFUNC=`cat << ARG
+)
+__BACKDOC=$(cat << BAK
+error() { echo -e '\e[0;1;31m[ERROR]\e[0;0;0m '"\\\$msg" >&2; }
+verbose() { [[ \\\$VERBOSE ]] && echo -e '\e[0;1;35m[VERBOSE]\e[0;0;0m '"\\\$msg"; }
+log() { echo -e '\e[0;1;32m[${s_appname^^}]\e[0;0;0m '"\\\$msg"; }
+BAK
+)
+__ARGFUNCDOC=$(cat << ARG
 __args() {
 	# Process args
 	while [[ "\\\$1" =~ '-' ]]; do
@@ -78,8 +84,8 @@ __args() {
 	shift; done
 }
 ARG
-`
-__ALTFUNC=`cat << ALT
+)
+__ALTFUNCDOC=$(cat << ALT
 __args() {
 	# Process args
 	while [[ "\\\$1" =~ '-' ]]; do
@@ -120,8 +126,8 @@ __args() {
 	shift; done
 }
 ALT
-`
-__CMDFUNC=`cat << CMD
+)
+__CMDFUNCDOC=$(cat << CMD
 lists[cmd]="^(config|help|version)$" # To be tested against
 __cmds() {
 	# Process commands
@@ -152,13 +158,72 @@ __cmds() {
 	shift; done
 }
 CMD
-`
-__BACK=`cat << BAK
-error() { echo -e '\e[0;1;31m[ERROR]\e[0;0;0m '"\\\$msg" >&2; }
-verbose() { [[ \\\$VERBOSE ]] && echo -e '\e[0;1;35m[VERBOSE]\e[0;0;0m '"\\\$msg"; }
-log() { echo -e '\e[0;1;32m[${s_appname^^}]\e[0;0;0m '"\\\$msg"; }
-BAK
-`
+)
+__STATEDOC=$(cat << STATE
+# Set app states in the following format:
+# states[name]=""
+declare -A states
+states[cfg]="" # Any text within a bool state signifies true, less is better
 
-__SHLIB="${__FRONT}\n$([[ "$__ALT" == "true" ]] && echo "$__ALTFUNC" || echo "$__ARGFUNC")\n\n$([[ "$__CMD" == "true" ]] && echo "$__CMDFUNC\n")${__BACK}"
+# Add commands to the regex string below, separated by '|'
+lists[cmds]="^()$"
+
+__args() {
+	while [[ -n "\\\$1" ]]; do
+		case "\\\${1,,}" in
+			-C | --config )
+				states[cfg]="t"
+				;;
+			-V | --verbose )
+				VERBOSE=true
+				;;
+			-\\? | --help ) # Not using -h to leave it open for other possible args
+				cat "\\\$prgroot/help"
+				exit;;
+			-v | --version )
+				cat "\\\$prgroot/version"
+				exit;;
+			* ) # Catch-all
+				if [[ "\\\$1" =~ \\\${lists[cmds]} ]]; then
+					__cmds "\\\$1"
+				else
+					cat "\\\$prgroot/help" | head -1
+					error "'\\\$1' is not an argument!"
+					exit
+				fi
+				;;
+		esac
+	shift; done
+}
+__cmds() {
+	while [[ -n "\\\$1" ]]; do
+		case "\\\${1,,}" in
+			^(config)$ )
+				states[cfg]="t"
+				;;
+			^(verbose)$ )
+				VERBOSE=true
+				;;
+			^(help)$ ) # Not using -h to leave it open for other possible args
+				cat "\\\$prgroot/help"
+				exit;;
+			^(version)$ )
+				cat "\\\$prgroot/version"
+				exit;;
+			* ) # Catch-all
+				if [[ "\\\$1" =~ ^- ]]; then
+					__args "\\\$1"
+				else
+					cat "\\\$prgroot/help" | head -1
+					error "'\\\$1' is not a command!"
+					exit
+				fi
+				;;
+		esac
+	shift; done
+}
+STATE
+)
+
+__SHLIB="$([[ "$__STATE" == "true" ]] && echo "${__FRONTDOC}\n${__STATEDOC}\n${__BACKDOC}" || echo "${__FRONTDOC}\n$([[ "$__ALT" == "true" ]] && echo "$__ALTFUNCDOC" || echo "$__ARGFUNCDOC")\n\n$([[ "$__CMD" == "true" ]] && echo "$__CMDFUNCDOC\n")${__BACKDOC}")"
 # EOF

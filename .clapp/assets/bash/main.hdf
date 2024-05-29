@@ -52,6 +52,8 @@ __MAINCMD=`cat << CMD
 CMD
 `
 
-__SHAPP="$__MAIN\n$([[ $__CMD ]] && echo "$__MAINCMD" || echo "  [[ -z \"\$1\" ]] && __args -? || __args \$@")\n$__END"
+__MAINARG="  [[ -z \"\$1\" ]] && __args -? || __args \$@"
+
+__SHAPP="$__MAIN\n$([[ "$__CMD" == "true" || "$__STATE" == "true" ]] && echo "$__MAINCMD" || echo "$__MAINARG")\n$__END"
 
 # EOF

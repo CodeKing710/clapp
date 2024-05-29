@@ -1,6 +1,6 @@
 # CLApp Changelog
 
-# What's New (v1.4.4)
+# What's New (v1.4.5)
 
 - Support for making Python apps
 - Support for making Node apps
@@ -17,6 +17,7 @@
 # What's Next (v1.5.0)
 
 - System-install variant for when you want any user to access the app
+- State-based Bash application (only process main after states from args are set)
 
 # Bugs
 ## Key:
