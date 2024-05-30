@@ -1,0 +1,6 @@
+#!/bin/bash
+
+__UTILMAINDOC=$(cat << UTILMAIN
+
+UTILMAIN
+)

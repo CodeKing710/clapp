@@ -113,7 +113,11 @@ __mknode() {
   # Slot 2: Express (E), Node (N)
   # Slot 3: React (R), Angular (A), EJS (E), Jade (J), HTML (H)
   local pkginstallstr="" # Dynamically built to ensure project setup is handled by node and not by clapp
-  local viewext=".html"
+  local viewext=""
+  local models=""
+  local views=""
+  local utils=""
+  [[ "${s_appopts[utils]}" ]] && utils=true
   procstr() {
     local db="${1:0:1}"
     local proc="${1:1:1}"
@@ -123,33 +127,46 @@ __mknode() {
     verbose "tmpeng: $tmpeng"
     case $db in
       M )
+        models=true
         pkginstallstr="${pkginstallstr}mongoose "
         ;;
       S | P | s )
+        models=true
         pkginstallstr="${pkginstallstr}sequelize "
         ;;
+      * ) ;;
     esac
     case $proc in
       E )
         pkginstallstr="${pkginstallstr}express cookie-parser "
         ;;
+      * ) ;;
     esac
     case $tmpeng in
       R )
         [ "$proc" = "E" ] && pkginstallstr="${pkginstallstr}react express-react-views " || pkginstallstr="${pkginstallstr}react "
         viewext=".jsx"
+        views=true
         ;;
       A )
         pkginstallstr="${pkginstallstr}angular "
+        views=true
         ;;
       E )
         pkginstallstr="${pkginstallstr}ejs "
         viewext=".ejs"
+        views=true
         ;;
       J )
         pkginstallstr="${pkginstallstr}jade "
         viewext=".jade"
+        views=true
         ;;
+      H )
+        viewext=".html"
+        views=true
+        ;;
+      * ) ;;
     esac
     pkginstallstr=$(echo "$pkginstallstr" | xargs)
   }
@@ -157,9 +174,19 @@ __mknode() {
 
   # Import respective templates
   source "$js_assets/main.hdf"
+  source "$js_assets/utils.hdf"
+  source "$js_assets/views.hdf"
+  source "$js_assets/models.hdf"
 
   # Begin setup of node project directory
   cd "$s_apploc"
+  mkdir public; mkdir public/css; mkdir public/js; mkdir public/assets; mkdir routes;
+  [[ "$models" == "true" ]] && mkdir models
+  [[ "$views" == "true" ]] && mkdir views
+  [[ "$utils" == "true" ]] && {
+    mkdir utils
+    echo "$__UTILMAINDOC" > utils/index.js
+  }
   echo -e "#!/bin/env node\n\n$__JSAPPMEE" >> index.js
   npm init -y >>/dev/null
   [ ! -z "$pkginstallstr" ] && { echo "Installing packages..."; npm i $pkginstallstr; } >&2 2>/dev/null && echo "Packages installed!"

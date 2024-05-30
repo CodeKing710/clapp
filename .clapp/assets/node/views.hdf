@@ -1,0 +1,6 @@
+#!/bin/bash
+
+__VIEWSMAINDOC=$(cat << VIEWSMAIN
+
+VIEWSMAIN
+)

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+__MODELMAINDOC=$(cat << MODELMAIN
+
+MODELMAIN
+)
