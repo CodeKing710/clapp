@@ -151,14 +151,18 @@ __mknode() {
         viewext=".jade"
         ;;
     esac
+    pkginstallstr=$(echo "$pkginstallstr" | xargs)
   }
   procstr "${s_appopts[style]}"
 
+  # Import respective templates
+  source "$js_assets/main.hdf"
+
   # Begin setup of node project directory
   cd "$s_apploc"
-  echo -e "#!/bin/env node\n\n$__JSAPP" >> index.js
+  echo -e "#!/bin/env node\n\n$__JSAPPMEE" >> index.js
   npm init -y >>/dev/null
-  [ ! -z "$pkginstallstr" ] && echo "Installing packages..." && ( npm i "$pkginstallstr" )>>/dev/null && echo "Packages installed!"
+  [ ! -z "$pkginstallstr" ] && { echo "Installing packages..."; npm i $pkginstallstr; } >&2 2>/dev/null && echo "Packages installed!"
 }
 __mkpy() {
   if [[ ! $(command -v python) && ! $(command -v python3) ]]; then error "Python Not Installed!"; exit; fi

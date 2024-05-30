@@ -1,20 +1,20 @@
 #!/bin/bash
 
-__JSAPP=`cat <<-APP
+__JSAPPMEE=$(cat <<-APP
 (async function() {
   // Uncomment the following if using a packaged environment
   // Adjust paths accordingly
-  // const venv = "$HOME/.venv/node_modules/";
-  // const get = (loc) => {return require(\\\`\\\${venv}\\\${loc}\\\`)};
+  const get = (loc) => {return require(\`${loc}\`);};
 
   const express = get("express");
   const app = express();
+  const PORT = process.env.PORT ?? 3000; // default port
 
   app.get('/', (req, res) => {
     res.status(200).render('index');
   });
 
-  app.listen(process.env.PORT || 3000, console.log(\\\`Listening on port \\\${process.env.PORT}...\\\`));
+  app.listen(PORT, console.log(\`Listening on port \${process.env.PORT}...\`));
 })();
 APP
-`
+)
