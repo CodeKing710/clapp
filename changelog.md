@@ -6,18 +6,18 @@
 - Support for making Node apps
 - Built-in unit test code for each type of app
 - Built-in settings code for bash apps
+- Under the hood improvements
 - Auto updates
 - Shorthand style
 - Settings
-- Alternative arg handling functions
-- Command mode option
-- Under the hood improvements
-- Cross compatibility
+- Alternative arg handling functions (Bash)
+- State-based processing option for (Bash)
+- Command mode option (Bash)
+- Cross compatibility (Bash)
 
 # What's Next (v1.5.0)
 
 - System-install variant for when you want any user to access the app
-- State-based Bash application (only process main after states from args are set)
 
 # Bugs
 ## Key:
