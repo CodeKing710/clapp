@@ -164,7 +164,7 @@ __mkpy() {
   if [[ ! $(command -v python) && ! $(command -v python3) ]]; then error "Python Not Installed!"; exit; fi
   __opts
 
-  [[ -n "${s_appopts[venv]}" ]] && { verbose "VENV: ${s_appopts[venv]}"; __VENV=true; }
+  [[ -n "${s_appopts[venv]}" ]] && __VENV=true
 
   source "$py_assets/main.hdf" # __PYAPP
   touch "$s_apploc/version"
@@ -219,7 +219,7 @@ __opts() {
 
   __srced=$([ ${s_appopts[src]} ] && echo ${s_appname,,}/src || echo ${s_appname,,})
   log "Generating $s_appname in location $s_apploc..."
-  verbose "Options: $(__gsopts)"
+  verbose "Options:\n$(__gsopts)"
   mkdir "$s_apploc"
 
   # Parse general options
@@ -315,17 +315,13 @@ __quick() {
 
   while [[ -n "$1" ]]; do
     if [[ "$1" =~ ${lists[types]} ]]; then
-    verbose "type: $1"
       type="$1"
-    elif [[ "$1" =~ '/' ]]; then
-    verbose "path: $1"
+    elif [[ "$1" =~ (^=)/ ]]; then
       loc="$1"
     elif [[ "$1" =~ '=' ]]; then
-    verbose "option: $1"
       opts="$1"
       shift
       while [[ "$1" =~ '=' ]]; do
-        verbose "option: $1"
         opts="$1 $opts"
       shift; done
     fi
