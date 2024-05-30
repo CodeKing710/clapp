@@ -48,8 +48,8 @@ __gsopts() {
     done
   else
     for arg in "$@"; do
-      local option="`echo "$arg" | cut -d '=' -f1`"
-      local value="`echo "$arg" | cut -d '=' -f2`"
+      local option="$(echo "$arg" | cut -d '=' -f1)"
+      local value="$(echo "$arg" | cut -d '=' -f2)"
       verbose "Option: $option"
       verbose "Value: $value"
 
@@ -164,6 +164,8 @@ __mkpy() {
   if [[ ! $(command -v python) && ! $(command -v python3) ]]; then error "Python Not Installed!"; exit; fi
   __opts
 
+  [[ -n "${s_appopts[venv]}" ]] && { verbose "VENV: ${s_appopts[venv]}"; __VENV=true; }
+
   source "$py_assets/main.hdf" # __PYAPP
   touch "$s_apploc/version"
   touch "$s_apploc/help"
@@ -215,7 +217,7 @@ __opts() {
   # Begin generating folders and files
   [ -d "$s_apploc" ] && error "App with that name already exists!" && exit
 
-  __srced=`[ ${s_appopts[src]} ] && echo ${s_appname,,}/src || echo ${s_appname,,}`
+  __srced=$([ ${s_appopts[src]} ] && echo ${s_appname,,}/src || echo ${s_appname,,})
   log "Generating $s_appname in location $s_apploc..."
   verbose "Options: $(__gsopts)"
   mkdir "$s_apploc"
@@ -299,12 +301,13 @@ __args() {
     esac
     shift
   done;
-  verbose "Type: `__gstype`"
-  verbose "Name: `__gsname`"
-  verbose "Path: `__gsloc`"
+  verbose "Type: $(__gstype)"
+  verbose "Name: $(__gsname)"
+  verbose "Path: $(__gsloc)"
 }
 __quick() {
   # CLApp's shorthand style
+  [[ "$1" =~ ^(-V|--verbose)$ ]] && { shift; __DEV=true; }
   local name="$1"; shift
   local type="${s_apptype,,}"
   local loc=""
@@ -312,13 +315,18 @@ __quick() {
 
   while [[ -n "$1" ]]; do
     if [[ "$1" =~ ${lists[types]} ]]; then
+    verbose "type: $1"
       type="$1"
     elif [[ "$1" =~ '/' ]]; then
+    verbose "path: $1"
       loc="$1"
     elif [[ "$1" =~ '=' ]]; then
+    verbose "option: $1"
       opts="$1"
+      shift
       while [[ "$1" =~ '=' ]]; do
-        opts="$opts $1"
+        verbose "option: $1"
+        opts="$1 $opts"
       shift; done
     fi
   shift; done
@@ -327,10 +335,10 @@ __quick() {
     __gsname "$name" &>/dev/null
     __gstype "$type" &>/dev/null
     __gsloc "$loc" &>/dev/null
-    __gsopts "${opts}" &>/dev/null
+    __gsopts "$opts" &>/dev/null
   else
     __gsname "$name" &>/dev/null
     __gstype "$type" &>/dev/null
-    __gsopts "${loc}" &>/dev/null
+    __gsloc "$loc" &>/dev/null
   fi
 }
