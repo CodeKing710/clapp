@@ -351,9 +351,9 @@ __args() {
 }
 __quick() {
   # CLApp's shorthand style
-  [[ "$1" =~ ^(-V|--verbose)$ ]] && { shift; __DEV=true; }
+  if [[ "$1" =~ (-V|--verbose) ]]; then shift; __DEV=true; fi
   verbose "Short-hand style usage!"
-  local name="$1"; shift
+  local name="$1"
   local type="${s_apptype,,}"
   local loc=""
   local opts=""
@@ -361,7 +361,7 @@ __quick() {
   while [[ -n "$1" ]]; do
     if [[ "$1" =~ ${lists[types]} ]]; then
       type="$1"
-    elif [[ "$1" =~ (^=)/ ]]; then
+    elif [[ "$1" =~ (^\=)/ ]]; then
       loc="$1"
     elif [[ "$1" =~ '=' ]]; then
       opts="$1"
@@ -369,6 +369,8 @@ __quick() {
       while [[ "$1" =~ '=' ]]; do
         opts="$1 $opts"
       shift; done
+    else
+      name="$1"
     fi
   shift; done
 
