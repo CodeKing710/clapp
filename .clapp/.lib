@@ -117,6 +117,7 @@ __mknode() {
   local models=""
   local views=""
   local utils=""
+  local express=""
   [[ "${s_appopts[utils]}" ]] && utils=true
   procstr() {
     local db="${1:0:1}"
@@ -139,6 +140,7 @@ __mknode() {
     case $proc in
       E )
         pkginstallstr="${pkginstallstr}express cookie-parser "
+        express=true
         ;;
       * ) ;;
     esac
@@ -170,7 +172,7 @@ __mknode() {
     esac
     pkginstallstr=$(echo "$pkginstallstr" | xargs)
   }
-  procstr "${s_appopts[style]}"
+  [[ -n "${s_appopts[style]}" ]] && procstr "${s_appopts[style]}"
 
   # Import respective templates
   source "$js_assets/main.hdf"
@@ -180,16 +182,26 @@ __mknode() {
 
   # Begin setup of node project directory
   cd "$s_apploc"
-  mkdir public; mkdir public/css; mkdir public/js; mkdir public/assets; mkdir routes;
-  [[ "$models" == "true" ]] && mkdir models
-  [[ "$views" == "true" ]] && mkdir views
-  [[ "$utils" == "true" ]] && {
-    mkdir utils
-    echo "$__UTILMAINDOC" > utils/index.js
+  mkdir ./public; mkdir ./public/css; mkdir ./public/js; mkdir ./public/assets; mkdir ./routes;
+  [[ "$models" == "true" ]] && {
+    mkdir ./models
+    echo "$__MAINDOC" >> ./models/index.js
   }
-  echo -e "#!/bin/env node\n\n$__JSAPPMEE" >> index.js
+  [[ "$views" == "true" ]] && {
+    mkdir ./views
+    echo "$__MAINDOC" >> ./views/index.js
+  }
+  [[ "$utils" == "true" ]] && {
+    mkdir ./utils
+    echo "$__UTILMAINDOC" >> ./utils/index.js
+  }
+  [[ "$express" == "true" ]] && echo -e "#!/bin/env node\n\n$__JSAPPE" >> ./index.js || echo -e "#!/bin/env node\n\n$__JSAPP" >> ./index.js
   npm init -y >>/dev/null
-  [ ! -z "$pkginstallstr" ] && { echo "Installing packages..."; npm i $pkginstallstr; } >&2 2>/dev/null && echo "Packages installed!"
+  [ ! -z "$pkginstallstr" ] && { echo "Installing packages..."; npm i $pkginstallstr >/dev/null || return 1; } && echo "Packages installed!"
+
+  # If we got here, we succeeded
+  log "Successfully created Node app '$s_appname' in location $s_apploc!"
+  log "Refer to documentation in clapp (clapp --docs) on further setup!"
 }
 __mkpy() {
   if [[ ! $(command -v python) && ! $(command -v python3) ]]; then error "Python Not Installed!"; exit; fi
@@ -204,7 +216,7 @@ __mkpy() {
   chmod u+x "$s_apploc/$s_appname.py"
 
   # If we got here, we succeeded
-  log "Successfully made app $s_appname in location $s_apploc!"
+  log "Successfully created Python app '$s_appname' in location $s_apploc!"
   log "Refer to documentation in clapp (clapp --docs) on further setup!"
 }
 __mksh() {
@@ -237,7 +249,7 @@ __mksh() {
   chmod ug+x "$s_apploc/install"
 
   # If we got here, we succeeded
-  log "Successfully made app $s_appname in location $s_apploc!"
+  log "Successfully created Bash app '$s_appname' in location $s_apploc!"
   log "Refer to documentation in clapp (clapp --docs) on further setup!"
 }
 
@@ -270,6 +282,7 @@ __opts() {
   done
 }
 __args() {
+  verbose "Arg-style usage!"
   while [[ "$1" =~ "-" ]]; do
     # Arg parsing failure will force exit the program
     case $1 in
@@ -339,6 +352,7 @@ __args() {
 __quick() {
   # CLApp's shorthand style
   [[ "$1" =~ ^(-V|--verbose)$ ]] && { shift; __DEV=true; }
+  verbose "Short-hand style usage!"
   local name="$1"; shift
   local type="${s_apptype,,}"
   local loc=""

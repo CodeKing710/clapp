@@ -31,3 +31,6 @@
 
 - CB000001 [R]: Shorthand style would take over when arg style is desired
             **FIX**: No longer unexpectedly runs shorthand style when running in arg style
+
+- CB000002 [O]: Short-hand style does not recognize arguments properly. Name is not grabbed upon usage like so: clapp name node style=MEE
+            **Workaround**: Use arg style instead for now, shorthand will be fixed in v1.5.1

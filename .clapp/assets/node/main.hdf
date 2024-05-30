@@ -1,10 +1,10 @@
 #!/bin/bash
 
-__JSAPPMEE=$(cat <<-APP
+__JSAPPE=$(cat << APP
 (async function() {
   // Uncomment the following if using a packaged environment
   // Adjust paths accordingly
-  const get = (loc) => {return require(\`${loc}\`);};
+  const get = (loc) => {return require(\`\${loc}\`);};
 
   const express = get("express");
   const app = express();
@@ -14,7 +14,19 @@ __JSAPPMEE=$(cat <<-APP
     res.status(200).render('index');
   });
 
-  app.listen(PORT, console.log(\`Listening on port \${process.env.PORT}...\`));
+  app.listen(PORT, console.log(\`Listening on port \${PORT}...\`));
+})();
+APP
+)
+
+__JSAPP=$(cat << APP
+(async function() {
+  // Uncomment the following if using a packaged environment
+  // Adjust paths accordingly
+  const get = (loc) => {return require(\`\${loc}\`);};
+
+  // Write any code you want here
+  
 })();
 APP
 )
