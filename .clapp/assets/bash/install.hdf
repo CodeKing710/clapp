@@ -12,6 +12,6 @@ install() {
 	echo "$s_appname installed!"
 }
 
-install
+install "\$@"
 INST
 )
