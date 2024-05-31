@@ -6,7 +6,7 @@ __FRONTDOC=$(cat << LIB
 # $s_appname's Functions and Variables
 
 # Vars
-__cwd=\$(pwd)
+__cwd="\$(pwd)"
 prgroot="\$HOME/.${s_appname,,}"
 
 declare -A lists # For any lists your app may need as reference

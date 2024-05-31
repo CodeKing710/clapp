@@ -10,7 +10,7 @@
 #
 
 autoupdate="$(cat "$HOME"/.clapp/.cfg | grep 'autoup' | cut -d '=' -f2)"
-repo="$(find "$HOME" -type d -name clapp 2>/dev/null | head -1)"
+repo="$(dirname $(find "$HOME" -type d -name .clapp 2>/dev/null | grep repo))"
 
 # Check for unit test
 if [[ "$CLAPP_TST" == "true" ]]; then

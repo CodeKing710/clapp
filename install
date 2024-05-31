@@ -2,7 +2,7 @@
 
 # Install script for clapp
 install() {
-  local repo="$(find "$HOME" -type d -name clapp 2>/dev/null | head -1)"
+  local repo="$(dirname $(find "$HOME" -type d -name .clapp 2>/dev/null | grep repo))"
   cp -f "$repo"/clapp "$HOME"/bin/clapp || return
   [[ ! -e "$HOME"/.clapp ]] && mkdir "$HOME"/.clapp
   cp -f "$repo"/.clapp/.lib "$HOME"/.clapp/.lib || return

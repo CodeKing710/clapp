@@ -4,7 +4,7 @@ __MAIN=$(cat << APP
 # $s_appname's main code
 
 autoupdate="\$(cat \$HOME/.${s_appname,,}/.cfg | grep 'autoup' | cut -d '=' -f2)"
-repo=\$(find \$HOME -type d -name "$__srced" 2>/dev/null | head -1)
+repo="\$(find \$HOME -type d -name "$__srced" 2>/dev/null | grep repo)"
 
 # Check for unit test
 if [[ "\$${s_appname^^}_TST" == "true" ]]; then

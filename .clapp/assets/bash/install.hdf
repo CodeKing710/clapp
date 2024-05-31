@@ -5,7 +5,7 @@ __SHINSTALL=$(cat << INST
 
 # $s_appname's installer
 install() {
-	local repo=\$(find "\$HOME" -type d -name $__srced 2>/dev/null | head -1)
+	local repo="\$(find "\$HOME" -type d -name $__srced 2>/dev/null | grep repo)"
 	cp "\$repo"/${s_appname,,} "\$HOME"/bin || return
 	cp -r "\$repo"/.${s_appname,,} "\$HOME"/ || return
 	echo "$s_appname installed!"
