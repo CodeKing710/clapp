@@ -43,7 +43,7 @@ LIB
 )
 __BACKDOC=$(cat << BAK
 error() { echo -e '\\e[0;1;31m[ERROR]\\e[0;0;0m '"\$1" >&2; }
-verbose() { [[ \$VERBOSE ]] && echo -e '\\e[0;1;35m[VERBOSE]\\e[0;0;0m '"\$1"; }
+verbose() { [[ -n "\$VERBOSE" ]] && echo -e '\\e[0;1;35m[VERBOSE]\\e[0;0;0m '"\$1"; }
 log() { echo -e '\\e[0;1;32m[${s_appname^^}]\\e[0;0;0m '"\$1"; }
 BAK
 )
@@ -187,6 +187,7 @@ __args() {
 			* ) # Catch-all
 				if [[ "\$1" =~ \${lists[cmds]} ]]; then
 					__cmds "\$1"
+					return 0
 				else
 					cat "\$prgroot/help" | head -1
 					error "'\$1' is not an argument!"
@@ -215,9 +216,11 @@ __cmds() {
 			* ) # Catch-all
 				if [[ "\$1" =~ ^- ]]; then
 					__args "\$1"
+					return 0
 				else
-					cat "\$prgroot/help" | head -1
+					verbose "Grepped command: '\$(echo "\${lists[cmds]}" | sed -e 's/\\^\\|[\\(]\\|[\\)]\\|\\\$//g' -e 's/[\\|]/\\n/g' | grep "\$1")'"
 					error "'\$1' is not a command!"
+					error "Did you mean to use '\$(echo "\${lists[cmds]}" | sed -e 's/\\^\\|[\\(]\\|[\\)]\\|\\\$//g' -e 's/[\\|]/\\n/g' | grep "\$1")'?"
 					exit
 				fi
 				;;
