@@ -28,15 +28,15 @@ __cfg() {
 			local oldvalue="\$(cat "\$cfg" | grep "\$rule" | cut -d '=' -f2)"
 			local newvalue="\$(echo "\$1" | cut -d '=' -f2)"
 			sed -i -e "s/\$rule=\$oldvalue/\$rule=\$newvalue/" "\$cfg"
-			echo "Updated rule \$rule from \$oldvalue to \$newvalue!"
+			log "Updated rule \$rule from \$oldvalue to \$newvalue!"
 		elif [[ "\$1" == 'list' ]]; then
-			echo "Current Settings:"
+			log "Current Settings:"
 			cat "\$cfg"
 			return
 		elif [[ "\$1" == 'RESET' ]]; then
 			__args --reset-cfg
 		fi
-		echo "Rule: \$(cat "\$cfg" | grep ^\$1$ || echo "No Rule Found!")"
+		log "Rule: \$(cat "\$cfg" | grep ^\$1$ || echo "No Rule Found!")"
 	shift; done
 }
 LIB
@@ -59,8 +59,8 @@ __args() {
 				[[ ! -z "\$1" ]] && __cfg "\$@" || ( error "Must supply rule or 'list'!"; exit )
 				exit;;
 			--reset-cfg )
-				echo "Resetting ${s_appname} to default configuration..."
-				cp -rf \$(find "\$HOME" -type d -name ${s_appname,,} 2>/dev/null | head -1)/.${s_appname,,} "\$HOME/" && echo "${s_appname}'s config has been reset!" || echo "Failed to reset defaults!"
+				log "Resetting ${s_appname} to default configuration..."
+				cp -rf \$(find "\$HOME" -type d -name ${s_appname,,} 2>/dev/null | head -1)/.${s_appname,,} "\$HOME/" && echo "${s_appname}'s config has been reset!" || error "Failed to reset defaults!"
 				exit;;
 			-\\? | -h | --help )
 				cat "\$prgroot/help"
@@ -76,7 +76,7 @@ __args() {
 					__cmds "\$@"
 				else
 					cat "\$prgroot/help" | head -1
-					echo "\\"\$1\\" is not an argument!"
+					error "\\"\$1\\" is not an argument!"
 					exit
 				fi
 				return;;
@@ -101,8 +101,8 @@ __args() {
 				shift; [[ ! -z "\$1" ]] && __cfg "\$@" || ( error "Must supply rule or 'list'!"; exit )
 				return;; # So the function doesn't endlessly recurse
 			--reset-cfg )
-				echo "Resetting ${s_appname} to default configuration..."
-				cp -rf \$(find "\$HOME" -type d -name ${s_appname,,} 2>/dev/null | head -1)/.${s_appname,,} "\$HOME/" && echo "${s_appname}'s config has been reset!" || echo "Failed to reset defaults!"
+				log "Resetting ${s_appname} to default configuration..."
+				cp -rf \$(find "\$HOME" -type d -name ${s_appname,,} 2>/dev/null | head -1)/.${s_appname,,} "\$HOME/" && echo "${s_appname}'s config has been reset!" || error "Failed to reset defaults!"
 				exit;;
 			-\\? | -h | --help )
 				cat "\$prgroot/help"
@@ -118,7 +118,7 @@ __args() {
 					__cmds "\$@"
 				else
 					cat "\$prgroot/help" | head -1
-					echo "\\"\$1\\" is not an argument!"
+					error "\\"\$1\\" is not an argument!"
 					exit
 				fi
 				return;;
@@ -150,7 +150,7 @@ __cmds() {
 					__args "\$@"
 				else
 					cat "\$prgroot/help" | head -1
-					echo "\\"\$1\\" is not a command!"
+					error "\\"\$1\\" is not a command!"
 					exit
 				fi
 				return;;
@@ -175,6 +175,10 @@ __args() {
 			-C | --config )
 				states[cfg]="t"
 				;;
+			--reset-cfg )
+				log "Resetting ${s_appname} to default configuration..."
+				cp -rf \$(find "\$HOME" -type d -name ${s_appname,,} 2>/dev/null | head -1)/.${s_appname,,} "\$HOME/" && echo "${s_appname}'s config has been reset!" || error "Failed to reset defaults!"
+				exit;;
 			-V | --verbose )
 				VERBOSE=true
 				;;
