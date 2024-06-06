@@ -1,6 +1,7 @@
 #!/bin/bash
 # SOURCE THIS FILE FOR HEREDOC INTERPOLATION
 __MAIN=$(cat << APP
+shopt -qs extglob # Comment out if you don't want this option
 # $s_appname's main code
 
 autoupdate="\$(cat \$HOME/.${s_appname,,}/.cfg | grep 'autoup' | cut -d '=' -f2)"
@@ -32,6 +33,7 @@ __END=$(cat << END
 }
 
 __${s_appname,,} "\$@"
+#shopt -qu extglob # Shouldn't need this as shopt stays specific to the subshell, uncomment if sourcing to parent
 
 # Cleanup for accidental sourcing
 unset __${s_appname,,} __args __cwd autoupdate repo

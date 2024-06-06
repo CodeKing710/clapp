@@ -166,7 +166,7 @@ declare -A states
 states[cfg]="" # Any text within a bool state signifies true, less is better
 
 # Add commands to the regex string below, separated by '|'
-lists[cmds]="^()$"
+lists[cmds]="^(config|verbose|help|version)$"
 
 __args() {
 	# Process args
@@ -200,16 +200,16 @@ __cmds() {
 	# Process commands
 	while [[ -n "\$1" ]]; do
 		case "\${1,,}" in
-			^\\(config\\)$ )
+			@(config) )
 				states[cfg]="t"
 				;;
-			^\\(verbose\\)$ )
+			@(verbose) )
 				VERBOSE=true
 				;;
-			^\\(help\\)$ ) # Not using -h to leave it open for other possible args
+			@(help) ) # Not using -h to leave it open for other possible args
 				cat "\$prgroot/help"
 				exit;;
-			^\\(version\\)$ )
+			@(version) )
 				cat "\$prgroot/version"
 				exit;;
 			* ) # Catch-all
