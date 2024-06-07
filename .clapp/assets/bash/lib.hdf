@@ -50,6 +50,7 @@ BAK
 __ARGFUNCDOC=$(cat << ARG
 __args() {
 	# Process args
+	[[ -z "\$1" ]] && cat "\$prgroot"/help | head -1 && exit
 	while [[ "\$1" =~ '-' ]]; do
 		# End case statements with 'exit;;' to ensure program only runs that argument
 		# Otherwise use 'exit;;' when you want to bail out due to erroneous behaviour
@@ -88,6 +89,7 @@ ARG
 __ALTFUNCDOC=$(cat << ALT
 __args() {
 	# Process args
+	[[ -z "\$1" ]] && cat "\$prgroot"/help | head -1 && exit
 	while [[ "\$1" =~ '-' ]]; do
 		# End case statements with 'return;;' to allow for arglist to be passed around and continue execution
 		# Otherwise use 'exit;;' when you want to bail out due to erroneous behaviour
@@ -132,6 +134,7 @@ lists[cmd]="^(config|help|version)$" # To be tested against
 __cmds() {
 	# Process commands
 	# Adjust the args command accordingly if desired
+	[[ -z "\$1" ]] && cat "\$prgroot"/help | head -1 && exit
 	while [[ true ]]; do
 		# End case statements with 'exit;;' to run just the one command
 		# Otherwise use 'exit;;' when you want to bail out due to erroneous behaviour
@@ -170,6 +173,7 @@ lists[cmds]="^(config|verbose|help|version)$"
 
 __args() {
 	# Process args
+	[[ -z "\$1" ]] && cat "\$prgroot"/help | head -1 && exit
 	while [[ -n "\$1" ]]; do
 		case "\${1,,}" in
 			-C | --config )
@@ -203,6 +207,7 @@ __args() {
 }
 __cmds() {
 	# Process commands
+	[[ -z "\$1" ]] && cat "\$prgroot"/help | head -1 && exit
 	while [[ -n "\$1" ]]; do
 		case "\${1,,}" in
 			@(config) )

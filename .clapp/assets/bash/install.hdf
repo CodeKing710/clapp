@@ -7,7 +7,9 @@ __SHINSTALL=$(cat << INST
 install() {
 	local repo="\$(find "\$HOME" -type d -name $__srced 2>/dev/null | grep repo)"
 	cp "\$repo"/${s_appname,,} "\$HOME"/bin || return
-	cp -r "\$repo"/.${s_appname,,} "\$HOME"/ || return
+	cp -r "\$repo"/.${s_appname,,}/.lib "\$HOME"/.${s_appname,,} || return
+	cp -r "\$repo"/.${s_appname,,}/help "\$HOME"/.${s_appname,,} || return
+	cp -r "\$repo"/.${s_appname,,}/version "\$HOME"/.${s_appname,,} || return
 	[[ ! -e "\$HOME"/.${s_appname,,}/.cfg ]] && { cp -f "\$repo"/.${s_appname,,}/.cfg "\$HOME"/.${s_appname,,}/.cfg || return 1; }
 	echo "$s_appname installed!"
 }
