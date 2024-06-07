@@ -104,8 +104,9 @@ __gscfg() {
 
 # Functionality
 __mknode() {
-  [[ $(command -v npm || command -v node) ]] || ( error "NodeJS Not Installed!" && exit )
+  [[ $(command -v npm || command -v node) ]] || { error "NodeJS Not Installed!"; exit; }
   __opts # Process general options
+  [[ -n "${s_appopts[venv]}" ]] && __VENV=true
 
   # Process Node-specific options
   # web: process string to respective packages
@@ -182,7 +183,7 @@ __mknode() {
 
   # Begin setup of node project directory
   cd "$s_apploc"
-  mkdir ./public; mkdir ./public/css; mkdir ./public/js; mkdir ./public/assets; mkdir ./routes;
+  
   [[ "$models" == "true" ]] && {
     mkdir ./models
     echo "$__MAINDOC" >> ./models/index.js
@@ -195,9 +196,9 @@ __mknode() {
     mkdir ./utils
     echo "$__UTILMAINDOC" >> ./utils/index.js
   }
-  [[ "$express" == "true" ]] && echo -e "#!/bin/env node\n\n$__JSAPPE" >> ./index.js || echo -e "#!/bin/env node\n\n$__JSAPP" >> ./index.js
+  [[ "$express" == "true" ]] && { mkdir ./public; mkdir ./public/css; mkdir ./public/js; mkdir ./public/assets; mkdir ./routes; echo -e "#!/bin/env node\n\n$__JSAPPE" >> ./index.js; } || echo -e "#!/bin/env node\n\n$__JSAPP" >> ./index.js
   npm init -y >>/dev/null
-  [ ! -z "$pkginstallstr" ] && { echo "Installing packages..."; npm i $pkginstallstr >/dev/null || return 1; } && echo "Packages installed!"
+  [[ ! -z "$pkginstallstr" ]] && { echo "Installing packages..."; npm i $pkginstallstr >/dev/null || return 1; } && echo "Packages installed!"
 
   # If we got here, we succeeded
   log "Successfully created Node app '$s_appname' in location $s_apploc!"

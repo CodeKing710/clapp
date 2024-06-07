@@ -1,7 +1,7 @@
 #!/bin/bash
 
 __PYAPP=$(cat << HDF
-$([[ -n "$__VENV" ]] && { [[ -n "$(command -v vem)" && ! "${s_appopts[venv]}" =~ "/" ]] && echo "#!$(vem -p --path "${s_appopts[venv]}")/python" || echo "#!${s_appopts[venv]}/python"; } || echo "#!/bin/env python")
+$([[ -n "$__VENV" ]] && { [[ -n "$(command -v vem)" && ! "${s_appopts[venv]}" =~ "/" ]] && echo "#!$(vem --python --path "${s_appopts[venv]}")/python" || echo "#!${s_appopts[venv]}/python"; } || echo "#!/bin/env python")
 
 # $s_appname - Does things and stuff
 HDF

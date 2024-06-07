@@ -2,9 +2,10 @@
 
 __JSAPPE=$(cat << APP
 (async function() {
-  // Uncomment the following if using a packaged environment
-  // Adjust paths accordingly
-  const get = (loc) => {return require(\`\${loc}\`);};
+  // Adjust paths accordingly for virtual envs
+  // Use of the get() function not mandatory
+  const venv = "$([[ -n "$__VENV" ]] && { [[ -n "$(command -v vem)" && ! "${s_appopts[venv]}" =~ "/" ]] && echo "$(vem --node --path "${s_appopts[venv]}")/node_modules/" || echo "${s_appopts[venv]}/node_modules/"; } || echo "")";
+  const get = (loc) => {return require(\`\${venv}\${loc}\`);};
 
   const express = get("express");
   const app = express();
@@ -21,9 +22,10 @@ APP
 
 __JSAPP=$(cat << APP
 (async function() {
-  // Uncomment the following if using a packaged environment
-  // Adjust paths accordingly
-  const get = (loc) => {return require(\`\${loc}\`);};
+  // Adjust paths accordingly for virtual envs
+  // Use of the get() function not mandatory
+  const venv = "$([[ -n "$__VENV" ]] && { [[ -n "$(command -v vem)" && ! "${s_appopts[venv]}" =~ "/" ]] && echo "$(vem --node --path "${s_appopts[venv]}")/node_modules/" || echo "${s_appopts[venv]}/node_modules/"; } || echo "")";
+  const get = (loc) => {return require(\`\${venv}\${loc}\`);};
 
   // Write any code you want here
   
