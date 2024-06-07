@@ -187,15 +187,15 @@ __mknode() {
   
   [[ "$models" == "true" ]] && {
     mkdir ./models
-    echo "$__MAINDOC" >> ./models/index.js
-  }
-  [[ "$views" == "true" ]] && {
-    mkdir ./views
-    echo "$__MAINDOC" >> ./views/index.js
+    echo "$__MODELMAINDOC" >> ./models/index.js
   }
   [[ "$utils" == "true" ]] && {
     mkdir ./utils
     echo "$__UTILMAINDOC" >> ./utils/index.js
+  }
+  [[ "$views" == "true" ]] && {
+    mkdir ./views
+    echo "$__VIEWSMAINDOC" >> ./views/index.js
   }
   [[ "$express" == "true" ]] && { mkdir ./public; mkdir ./public/css; mkdir ./public/js; mkdir ./public/assets; mkdir ./routes; echo -e "#!/bin/env node\n\n$__JSAPPE" >> ./index.js; } || echo -e "#!/bin/env node\n\n$__JSAPP" >> ./index.js
   npm init -y >>/dev/null
