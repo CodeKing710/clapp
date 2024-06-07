@@ -6,6 +6,7 @@ __MAIN=$(cat << APP
 
 autoupdate="\$(cat \$HOME/.${s_appname,,}/.cfg | grep 'autoup' | cut -d '=' -f2)"
 repo="\$(find \$HOME -type d -name "$__srced" 2>/dev/null | grep repo)"
+[[ ! -e "\$HOME"/.${s_appname,,} ]] && mkdir "\$HOME/.${s_appname,,}" && "\$repo/install"
 
 # Check for unit test
 if [[ "\$${s_appname^^}_TST" == "true" ]]; then
@@ -15,8 +16,7 @@ if [[ "\$${s_appname^^}_TST" == "true" ]]; then
 	prgroot="\$repo/.${s_appname,,}"
 elif [[ "\$autoupdate" == "true" ]]; then
 	# Check for updates
-	if [[ ! -d "\$HOME"/.${s_appname,,} || \\
-	-n "\$(diff "\$repo"/.${s_appname,,}/.lib "\$HOME"/.${s_appname,,})/.lib" || \\
+	if [[ -n "\$(diff "\$repo"/.${s_appname,,}/.lib "\$HOME"/.${s_appname,,})/.lib" || \\
 	-n "\$(diff "\$repo"/.${s_appname,,}/help "\$HOME"/.${s_appname,,})/help" || \\
 	-n "\$(diff "\$repo"/.${s_appname,,}/version "\$HOME"/.${s_appname,,})/version" || \\
 	-n "\$(diff "\$repo"/${s_appname,,} "\$HOME"/bin/${s_appname,,})" ]]; then "\$repo/install"; fi

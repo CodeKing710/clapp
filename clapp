@@ -11,6 +11,7 @@
 
 autoupdate="$(cat "$HOME"/.clapp/.cfg | grep 'autoup' | cut -d '=' -f2)"
 repo="$(dirname $(find "$HOME" -type d -name .clapp 2>/dev/null | grep repo))"
+[[ ! -e "$HOME/.clapp" ]] && mkdir "$HOME"/.clapp && "$repo/install"
 
 # Check for unit test
 if [[ "$CLAPP_TST" == "true" ]]; then
@@ -20,15 +21,25 @@ if [[ "$CLAPP_TST" == "true" ]]; then
   prgroot="$repo"/.clapp
 elif [[ "$autoupdate" == "true" ]]; then
   # Check for updates
-  [ ! -d "$HOME"/.clapp ] && mkdir "$HOME"/.clapp && "$repo/install"
-  if [[ $(diff "$repo"/.clapp/.lib "$HOME"/.clapp/.lib) \
-  || $(diff "$repo"/.clapp/version "$HOME"/.clapp/version) \
-  || $(diff "$repo"/.clapp/help "$HOME"/.clapp/help) \
-  || $(diff "$repo"/.clapp/assets/bash "$HOME"/.clapp/assets/bash) \
-  || $(diff "$repo"/.clapp/assets/node "$HOME"/.clapp/assets/node) \
-  || $(diff "$repo"/.clapp/assets/python "$HOME"/.clapp/assets/python) \
-  || $(diff "$repo"/.clapp/docs "$HOME"/.clapp/docs) \
-  || $(diff "$repo"/clapp "$HOME"/bin/clapp) ]]; then echo "Update found! Installing..."; "$repo/install"; fi
+  if [[ -z "$([[ -e /usr/local/bin ]] && find /usr/local/bin -type f -name clapp)" ]]; then
+    if [[ -n "$(diff "$repo"/.clapp/.lib "$HOME"/.clapp/.lib)" \
+    || -n "$(diff "$repo"/.clapp/version "$HOME"/.clapp/version)" \
+    || -n "$(diff "$repo"/.clapp/help "$HOME"/.clapp/help)" \
+    || -n "$(diff "$repo"/.clapp/assets/bash "$HOME"/.clapp/assets/bash)" \
+    || -n "$(diff "$repo"/.clapp/assets/node "$HOME"/.clapp/assets/node)" \
+    || -n "$(diff "$repo"/.clapp/assets/python "$HOME"/.clapp/assets/python)" \
+    || -n "$(diff "$repo"/.clapp/docs "$HOME"/.clapp/docs)" \
+    || -n "$(diff "$repo"/clapp "$HOME"/bin/clapp)" ]]; then "$repo/install"; fi
+  else
+    if [[ -n "$(diff "$repo"/.clapp/.lib "$HOME"/.clapp/.lib)" \
+    || -n "$(diff "$repo"/.clapp/version "$HOME"/.clapp/version)" \
+    || -n "$(diff "$repo"/.clapp/help "$HOME"/.clapp/help)" \
+    || -n "$(diff "$repo"/.clapp/assets/bash "$HOME"/.clapp/assets/bash)" \
+    || -n "$(diff "$repo"/.clapp/assets/node "$HOME"/.clapp/assets/node)" \
+    || -n "$(diff "$repo"/.clapp/assets/python "$HOME"/.clapp/assets/python)" \
+    || -n "$(diff "$repo"/.clapp/docs "$HOME"/.clapp/docs)" \
+    || -n "$(diff "$repo"/clapp /usr/local/bin/clapp)" ]]; then "$repo/install" --sys; fi
+  fi
 
   # Load lib
   source "$HOME"/.clapp/.lib
