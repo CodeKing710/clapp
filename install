@@ -6,7 +6,7 @@ install() {
   [[ "$1" == "--sys" ]] && { sudo cp -f "$repo/clapp" "/usr/local/bin" || return 1; } || { cp -f "$repo"/clapp "$HOME"/bin/clapp || return 1; }
   [[ ! -e "$HOME/.clapp" ]] && mkdir "$HOME/.clapp"
   cp -f "$repo"/.clapp/.lib "$HOME"/.clapp/.lib || return 1
-  [[ ! -e "$HOME/.clapp/.cfg" ]] && cp -f "$repo"/.clapp/.cfg "$HOME"/.clapp/.cfg || return 1
+  [[ ! -e "$HOME/.clapp/.cfg" ]] && { cp -f "$repo"/.clapp/.cfg "$HOME"/.clapp/.cfg || return 1; }
   cp -f "$repo"/.clapp/help "$HOME"/.clapp/help || return 1
   cp -f "$repo"/.clapp/version "$HOME"/.clapp/version || return 1
   cp -f -r "$repo"/.clapp/assets "$HOME"/.clapp/ || return 1
@@ -14,4 +14,4 @@ install() {
   echo "CLApp installed!"
 }
 
-install
+install "$@"
