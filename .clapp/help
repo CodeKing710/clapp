@@ -21,6 +21,17 @@ Options:
                                   (adds high possibility of fork bombing your app, just be careful)
                     - states: Utilizes a state-based processing architecture. CANNOT BE USED WITH COMMANDS OR ALTARGFUNC!
 
+                    Node-Specific Options:
+                    - venv: Use a venv location or choose a vem venv by name
+                    - style: Set the style of the node app using 3 indexed characters. Their positioning matters! i.e. (MEH=Mongo,Express,HTML)
+                      - To omit use of a prebuilt style choice, input 'X' or '0' as a placeholder
+                        - M=Mongo, S=SQL, P=PostgreSQL, s=Other SQL (No prebuilt code)
+                        - E=Express (Boolean, stubs web server)
+                        - R=React, A=Angular, E=EJS, J=Jade, H=HTML
+
+                    Python-Specific Options:
+                    - venv: Use a venv location or choose a vem venv by name
+
   -C | --config     Gets or sets rules in the configuration.
                     Available Options:
                     - list: Shows current configuration
