@@ -29,7 +29,7 @@ More advanced direction can be found in the help
 
 ## How to update
 
-CLApp is automatically updated, so you don't have to worry about it.
+CLApp is automatically updated, so you don't have to worry about it. But in case you turn off auto-updates, you can run the installer from the repo again to update. Flag for reinstalling up for debate currently
 
 ## How to contribute
 

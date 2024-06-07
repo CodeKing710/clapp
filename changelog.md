@@ -1,6 +1,6 @@
 # CLApp Changelog
 
-# What's New (v1.4.5)
+# What's New (v1.6.0)
 
 - Support for making Python apps
 - Support for making Node apps
@@ -14,10 +14,12 @@
 - State-based processing option for (Bash)
 - Command mode option (Bash)
 - Cross compatibility (Bash)
-
-# What's Next (v1.5.0)
-
 - System-install variant for when you want any user to access the app
+- Versioning controlled by semver (not the node package, general bash script for updating version files of various kinds made by me)
+
+# What's Next (v1.7.0)
+
+- I guess we will see what else
 
 # Bugs
 ## Key:
@@ -33,4 +35,4 @@
             **FIX**: No longer unexpectedly runs shorthand style when running in arg style
 
 - CB000002 [O]: Short-hand style does not recognize arguments properly. Name is not grabbed upon usage like so: clapp name node style=MEE
-            **Workaround**: Use arg style instead for now, shorthand will be fixed in v1.5.1
+            **Fixed?**: shorthand style now correctly recognizes arguments
