@@ -1,6 +1,49 @@
 #!/bin/bash
 
-__VIEWSMAINDOC=$(cat << VIEWSMAIN
+__VIEWSHEADDOC=$(cat << VIEWHEAD
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Put Title Here</title>
+  </head>
+  <body>
+    <header>
+      <center>
+        <h1>Also Title</h1>
+      </center>
+    </header>
+    <main>
+VIEWHEAD
+)
 
+__VIEWSTAILDOC=$(cat << VIEWTAIL
+    </main>
+    <footer>
+      <center>
+        <p>Fill me with footer info!</p>
+      </center>
+    </footer>
+  </body>
+</html>
+VIEWTAIL
+)
+
+__VIEWSMAINDOC=$(cat << VIEWSMAIN
+      <h2>Put Main Content Here</h2>
+      <p>More content here! If you are not using a template engine, you must combine these files together!</p>
 VIEWSMAIN
+)
+
+__VIEWSERRDOC=$(cat << ERRDOC
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Error 404</title>
+  </head>
+  <body>
+    <h1>404 Error</h1>
+    <p>Page not found!</p>
+  </body>
+</html>
+ERRDOC
 )

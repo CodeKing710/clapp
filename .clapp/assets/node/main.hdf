@@ -2,6 +2,7 @@
 
 __JSAPPE=$(cat << APP
 (async function() {
+  require('dotenv').config();
   // Adjust paths accordingly for virtual envs
   // Use of the get() function not mandatory
   const venv = "$([[ -n "$__VENV" ]] && { [[ -n "$(command -v vem)" && ! "${s_appopts[venv]}" =~ "/" ]] && echo "$(vem --node --path "${s_appopts[venv]}")/node_modules/" || echo "${s_appopts[venv]}/node_modules/"; } || echo "")";
@@ -10,6 +11,17 @@ __JSAPPE=$(cat << APP
   const express = get("express");
   const app = express();
   const PORT = process.env.PORT ?? 3000; // default port
+  const routes = require('./routes');
+  $([[ -n "$views" ]] && echo "const ejs = require('ejs');")
+  $([[ -n "$utils" ]] && echo "const utils = require('./utils');")
+
+  $([[ -n "$views" ]] && echo "app.set('view engine','ejs');")
+  app.use(express.json());
+  app.use(express.static("public"));
+  app.use(express.urlencoded({ extended: true }));
+  app.use(utils.templateVars());
+
+  for ( const route in routes ) { app.use(routes[route].path, routes[route].ctrl); }
 
   app.get('/', (req, res) => {
     res.status(200).render('index');

@@ -115,6 +115,7 @@ __mknode() {
   # Slot 3: React (R), Angular (A), EJS (E), Jade (J), HTML (H)
   local pkginstallstr="" # Dynamically built to ensure project setup is handled by node and not by clapp
   local viewext=""
+  # Booleans
   local models=""
   local views=""
   local utils=""

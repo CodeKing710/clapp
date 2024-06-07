@@ -1,6 +1,17 @@
 #!/bin/bash
 
 __UTILMAINDOC=$(cat << UTILMAIN
-
+exports.templateVars = require('./tvars');
 UTILMAIN
+)
+
+__UTILTVARDOC=$(cat << TVAR
+module.exports = function(vars) {
+  return function (req,res,next) {
+    if(typeof vars === 'object') { req.app.locals = { ...(req.applocals), ...vars}; }
+    req.app.locals.userid = req.session?.userid ?? 'guest';
+    next();
+  };
+};
+TVAR
 )

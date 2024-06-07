@@ -1,0 +1,17 @@
+__ROUTESMAINDOC=$(cat << ROUTEMAIN
+exports.main = {path: '/', ctrl: require('./main')};
+ROUTEMAIN
+)
+
+__ROUTESMAINROUTE=$(cat << MAINROUTE
+//PATH: fqdn/
+const main = require('express').Router();
+
+//Routes - anything that falls directly under the PATH defined above
+main.get('/', (req, res) => {
+  res.status(200).render('index');
+});
+
+module.exports = main;
+MAINROUTE
+)

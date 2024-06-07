@@ -21,7 +21,7 @@ Options:
                                   (adds high possibility of fork bombing your app, just be careful)
                     - states: Utilizes a state-based processing architecture. CANNOT BE USED WITH COMMANDS OR ALTARGFUNC!
 
-                    Node-Specific Options:
+                    Node-Specific Options: (<= 18.x.x, CommonJS syntax)
                     - venv: Use a venv location or choose a vem venv by name
                     - style: Set the style of the node app using 3 indexed characters. Their positioning matters! i.e. (MEH=Mongo,Express,HTML)
                       - To omit use of a prebuilt style choice, input 'X' or '0' as a placeholder
