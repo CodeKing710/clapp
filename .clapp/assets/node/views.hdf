@@ -4,12 +4,12 @@ __VIEWSHEADDOC=$(cat << VIEWHEAD
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Put Title Here</title>
+    <title><%= title %></title>
   </head>
   <body>
     <header>
       <center>
-        <h1>Also Title</h1>
+        <h1><%= title %></h1>
       </center>
     </header>
     <main>
@@ -28,10 +28,42 @@ __VIEWSTAILDOC=$(cat << VIEWTAIL
 VIEWTAIL
 )
 
-__VIEWSMAINDOC=$(cat << VIEWSMAIN
-      <h2>Put Main Content Here</h2>
-      <p>More content here! If you are not using a template engine, you must combine these files together!</p>
-VIEWSMAIN
+__VIEWSEJSMAINDOC=$(cat << VIEWSEJSMAIN
+<%- include("head.ejs", {title: "Homepage"}); %>
+<center>
+  <h2>Put Main Content Here</h2>
+  <p>More content here!</p>
+</center>
+<%- include("foot.ejs"); %>
+VIEWSEJSMAIN
+)
+
+__VIEWSMAINDOC=$(cat << VIEWMAIN
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Welcome to the site!</title>
+  </head>
+  <body>
+    <header>
+      <center>
+        <h1>Welcome to the site!</h1>
+      </center>
+    </header>
+    <main>
+      <center>
+        <h2>Put Main Content Here</h2>
+        <p>More content here!</p>
+      </center>
+    </main>
+    <footer>
+      <center>
+        <p>Fill me with footer info!</p>
+      </center>
+    </footer>
+  </body>
+</html>
+VIEWMAIN
 )
 
 __VIEWSERRDOC=$(cat << ERRDOC

@@ -15,8 +15,9 @@ lists[types]="^(bash|sh|py|python|node|js|javascript)$"
 __cwd=$(pwd)
 
 error() { echo -e '\e[0;1;31m[ERROR]\e[0;0;0m '"${1}" >&2; }
-verbose() { [[ "$__DEV" == "true" ]] && echo -e '\e[0;1;95m[CLAppDev]\e[0;0;0m '"${1}"; }
+verbose() { [[ "$__DEV" == "true" ]] && echo -e '\e[0;1;95m[VERBOSE]\e[0;0;0m '"${1}"; }
 log() { echo -e '\e[0;1;36m[CLApp]\e[0;0;0m '"${1}"; }
+prompt() { echo -en '\e[0;1;36m[CLApp]\e[0;0;0m '"${1} "; read -r yn; [[ "${yn,,}" =~ 'y' ]] && return 0 || return 1; }
 
 # Getter/Setters for states
 __gstype() {
@@ -141,7 +142,7 @@ __mknode() {
     esac
     case $proc in
       E )
-        pkginstallstr="${pkginstallstr}express cookie-parser "
+        pkginstallstr="${pkginstallstr}express cookie-parser dotenv "
         express=true
         ;;
       * ) ;;
@@ -181,23 +182,42 @@ __mknode() {
   source "$js_assets/utils.hdf"
   source "$js_assets/views.hdf"
   source "$js_assets/models.hdf"
+  source "$js_assets/routes.hdf"
 
   # Begin setup of node project directory
   cd "$s_apploc"
   
   [[ "$models" == "true" ]] && {
-    mkdir ./models
-    echo "$__MODELMAINDOC" >> ./models/index.js
+    [[ ! -d "./models" ]] && mkdir ./models
+    echo "$__MODELMAINDOC" > ./models/index.js
+    echo "$__MODELUSERDOC" > ./models/user.js
   }
   [[ "$utils" == "true" ]] && {
-    mkdir ./utils
-    echo "$__UTILMAINDOC" >> ./utils/index.js
+    [[ ! -d "./utils" ]] && mkdir ./utils
+    echo "$__UTILMAINDOC" > ./utils/index.js
+    echo "$__UTILVARDOC" > ./utils/tvar.js
   }
   [[ "$views" == "true" ]] && {
-    mkdir ./views
-    echo "$__VIEWSMAINDOC" >> ./views/index.js
+    [[ ! -d "./views" ]] && mkdir ./views
+    [[ "$viewext" == ".ejs" ]] && {
+      echo "$__VIEWSMAINDOC" > ./views/index.ejs
+      echo "$__VIEWSHEADDOC" > ./views/head.ejs
+      echo "$__VIEWSTAILDOC" > ./views/foot.ejs
+      echo "$__VIEWSEJSMAINDOC" > ./views/404.ejs
+    } || [[ "$viewext" == ".html" ]] && {
+      echo "$__VIEWSMAINDOC" > ./views/index.html
+    }
   }
-  [[ "$express" == "true" ]] && { mkdir ./public; mkdir ./public/css; mkdir ./public/js; mkdir ./public/assets; mkdir ./routes; echo -e "#!/bin/env node\n\n$__JSAPPE" >> ./index.js; } || echo -e "#!/bin/env node\n\n$__JSAPP" >> ./index.js
+  [[ "$express" == "true" ]] && {
+    [[ ! -d "./public" ]] && mkdir ./public
+    [[ ! -d "./public/css" ]] && mkdir ./public/css
+    [[ ! -d "./public/js" ]] && mkdir ./public/js
+    [[ ! -d "./public/assets" ]] && mkdir ./public/assets
+    [[ ! -d "./routes" ]] && mkdir ./routes
+    echo "$__ROUTESMAINDOC" > ./routes/index.js
+    echo "$__ROUTESMAINROUTE" > ./routes/main.js
+    echo -e "#!/bin/env node\n\n$__JSAPPE" > ./index.js
+  } || echo -e "#!/bin/env node\n\n$__JSAPP" > ./index.js
   npm init -y >>/dev/null
   [[ ! -z "$pkginstallstr" ]] && { echo "Installing packages..."; npm i $pkginstallstr >/dev/null || return 1; } && echo "Packages installed!"
 
@@ -259,13 +279,16 @@ __mksh() {
 # Options take precedence over arguments
 # Setting name, type, or location in options will override
 __opts() {
-  # Begin generating folders and files
-  [ -d "$s_apploc" ] && error "App with that name already exists!" && exit
+  # Begin generating folders and files, ask overwrite prompt
+  [[ -d "$s_apploc" ]] && {
+    error "App with that name already exists!"
+    prompt "Would you like to overwrite the existing app? [Y/n]" || exit 1
+  }
 
   __srced=$([ ${s_appopts[src]} ] && echo ${s_appname,,}/src || echo ${s_appname,,})
   log "Generating $s_appname in location $s_apploc..."
   verbose "Options:\n$(__gsopts)"
-  mkdir "$s_apploc"
+  [[ ! -e "$s_apploc" ]] && mkdir "$s_apploc"
 
   # Parse general options
   for key in "${!s_appopts[@]}"; do
