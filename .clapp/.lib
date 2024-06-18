@@ -234,7 +234,7 @@ __mkpy() {
   source "$py_assets/main.hdf" # __PYAPP
   touch "$s_apploc/version"
   touch "$s_apploc/help"
-  echo -e "$__PYAPP" >> "$s_apploc/$s_appname.py"
+  echo -e "$__PYAPP" > "$s_apploc/$s_appname.py"
   chmod u+x "$s_apploc/$s_appname.py"
 
   # If we got here, we succeeded
@@ -254,14 +254,14 @@ __mksh() {
   source "$sh_assets/lib.hdf"
   # Generate based on all-in-one
   if [[ -n "${s_appopts[allone]}" ]]; then
-    echo -e "#!/bin/bash\n\nversion=\"${s_appname} - v1.0.0\"\nhelp=\"\"\n\n$__SHLIB\n$__SHAPP\nunset version help" >> "$s_apploc/${s_appname,,}"
+    echo -e "#!/bin/bash\n\nversion=\"${s_appname} - v1.0.0\"\nhelp=\"\"\n\n$__SHLIB\n$__SHAPP\nunset version help" > "$s_apploc/${s_appname,,}"
     chmod ug+x "$s_apploc/${s_appname,,}"
   else
     mkdir "$s_apploc/.${s_appname,,}"
-    echo "${s_appname} - v1.0.0" >> "$s_apploc/.${s_appname,,}/version"
-    echo "Usage: ${s_appname,,} [options] <args>" >> "$s_apploc/.${s_appname,,}/help"
-    echo -e "#!/bin/bash\n\n$__SHLIB" >> "$s_apploc/.${s_appname,,}/.lib"
-    echo -e "#!/bin/bash\n\n$__SHAPP" >> "$s_apploc/${s_appname,,}"
+    echo "${s_appname} - v1.0.0" > "$s_apploc/.${s_appname,,}/version"
+    echo "Usage: ${s_appname,,} [options] <args>" > "$s_apploc/.${s_appname,,}/help"
+    echo -e "#!/bin/bash\n\n$__SHLIB" > "$s_apploc/.${s_appname,,}/.lib"
+    echo -e "#!/bin/bash\n\n$__SHAPP" > "$s_apploc/${s_appname,,}"
     chmod ug+x "$s_apploc/.${s_appname,,}/.lib"
     chmod ug+x "$s_apploc/${s_appname,,}"
   fi
@@ -299,7 +299,7 @@ __opts() {
         s_apploc="$s_apploc/src"
         ;;
       repo )
-        cd "$s_apploc" && git init >>/dev/null && echo "# $s_appname" >> readme.md
+        cd "$s_apploc" && git init >>/dev/null && echo "# $s_appname" > readme.md
         log "Initialized app as repo! Don't forget to run \`git commit -a -m \"Creation of $s_appname!\"\`"
         cd "$__cwd"
         ;;
