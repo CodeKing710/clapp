@@ -6,11 +6,19 @@ __SHINSTALL=$(cat << INST
 # $s_appname's installer
 install() {
 	local repo="\$(find "\$HOME" -type d -name $__srced 2>/dev/null | grep repo)"
-	cp "\$repo"/${s_appname,,} "\$HOME"/bin || return
-	cp -r "\$repo"/.${s_appname,,}/.lib "\$HOME"/.${s_appname,,} || return
-	cp -r "\$repo"/.${s_appname,,}/help "\$HOME"/.${s_appname,,} || return
-	cp -r "\$repo"/.${s_appname,,}/version "\$HOME"/.${s_appname,,} || return
-	[[ ! -e "\$HOME"/.${s_appname,,}/.cfg ]] && { cp -f "\$repo"/.${s_appname,,}/.cfg "\$HOME"/.${s_appname,,}/.cfg || return 1; }
+	
+	# Preprocess
+	[[ ! -e "\$HOME/.${s_appname,,}" ]] && mkdir "\$HOME/.${s_appname,,}"
+
+	# Install
+	cp -f "\$repo"/$__srced "\$HOME"/bin || return 1
+	cp -f "\$repo"/.${s_appname,,}/.lib "\$HOME"/.${s_appname,,} || return 1
+	cp -f "\$repo"/.${s_appname,,}/help "\$HOME"/.${s_appname,,} || return 1
+	cp -f "\$repo"/.${s_appname,,}/version "\$HOME"/.${s_appname,,} || return 1
+	# Uncomment if you desire configurables
+	#[[ ! -e "\$HOME"/.${s_appname,,}/.cfg ]] && { cp -f "\$repo"/.${s_appname,,}/.cfg "\$HOME"/.${s_appname,,}/.cfg || return 1; }
+
+	# Comment if you want quiet installation
 	echo "$s_appname installed!"
 }
 
