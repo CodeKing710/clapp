@@ -16,10 +16,7 @@ if [[ "\$${s_appname^^}_TST" == "true" ]]; then
 	prgroot="\$repo/.${s_appname,,}"
 elif [[ "\$autoupdate" == "true" ]]; then
 	# Check for updates
-	if [[ -n "\$(diff "\$repo"/.${s_appname,,}/.lib "\$HOME"/.${s_appname,,})/.lib" || \\\
-	-n "\$(diff "\$repo"/.${s_appname,,}/help "\$HOME"/.${s_appname,,})/help" || \\\
-	-n "\$(diff "\$repo"/.${s_appname,,}/version "\$HOME"/.${s_appname,,})/version" || \\\
-	-n "\$(diff "\$repo"/${s_appname,,} "\$HOME"/bin/${s_appname,,})" ]]; then "\$repo/install"; fi
+	if [[ -n "\$(diff "\$repo"/.${s_appname,,}/.lib "\$HOME"/.${s_appname,,}/.lib)" || -n "\$(diff "\$repo"/.${s_appname,,}/help "\$HOME"/.${s_appname,,}/help)" || -n "\$(diff "\$repo"/.${s_appname,,}/version "\$HOME"/.${s_appname,,}/version)" || -n "\$(diff "\$repo"/${s_appname,,} "\$HOME"/bin/${s_appname,,})" ]]; then "\$repo/install"; fi
 	
 	# Load lib
 	source "\$HOME"/.${s_appname,,}/.lib

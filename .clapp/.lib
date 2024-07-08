@@ -267,7 +267,7 @@ __mksh() {
   fi
 
   # Generate install file
-  echo "$__SHINSTALL" >> "$s_apploc/install"
+  echo "$__SHINSTALL" > "$s_apploc/install"
   chmod ug+x "$s_apploc/install"
 
   # If we got here, we succeeded
