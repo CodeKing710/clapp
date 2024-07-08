@@ -38,8 +38,8 @@ __END=$(cat << END
 __${s_appname,,} "\$@"
 #shopt -qu extglob # Shouldn't need this as shopt stays specific to the subshell, uncomment if sourcing to parent
 
-# Cleanup for accidental sourcing (uncomment if desired)
-#unset __${s_appname,,} __args __cwd autoupdate repo
+# Cleanup for accidental sourcing
+[[ "\$\$" -eq "\$BASHPID" ]] && unset __${s_appname,,} __args __cwd autoupdate repo prgroot __loadcfg __cfg error verbose log lists __cmds _states
 END
 )
 __MAINCMD=$(cat << CMD
