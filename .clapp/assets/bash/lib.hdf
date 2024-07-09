@@ -175,7 +175,7 @@ __args() {
 	# Process args
 	[[ -z "\$1" ]] && cat "\$prgroot"/help | head -1 && exit
 	while [[ -n "\$1" ]]; do
-		case "\${1,,}" in
+		case "\${1}" in
 			-C | --config )
 				states[cfg]="t"
 				;;
