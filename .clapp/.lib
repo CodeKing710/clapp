@@ -10,9 +10,9 @@ s_apptype="$(cat $prgroot/.cfg | grep ^type= | cut -d '=' -f2)"
 s_apploc="$PWD/${s_appname,,}"
 __srced="${s_appname,,}"
 declare -A s_appopts
-declare -A v_lists # Setup for bash clapp apps
+declare -A lists # Setup for bash clapp apps
 lists[types]="^(bash|sh|py|python|node|js|javascript)$"
-__cwd=$(pwd)
+__cwd="$(pwd)"
 
 error() { echo -e '\e[0;1;31m[ERROR]\e[0;0;0m '"${1}" >&2; }
 verbose() { [[ "$__DEV" == "true" ]] && echo -e '\e[0;1;95m[VERBOSE]\e[0;0;0m '"${1}"; }
@@ -314,17 +314,17 @@ __args() {
       -t | --type )
         shift
         verbose "Setting app type to $1"
-        [ ! -z "$1" ] && __gstype "$1" || ( error "Must supply value to argument!"; exit )
+        [[ -n "$1" ]] && __gstype "$1" || { error "Must supply value to argument!"; exit; }
         ;;
       -n | --name )
         shift
         verbose "Setting app name to $1"
-        [ ! -z "$1" ] && __gsname "$1" || ( error "Must supply value to argument!"; exit )
+        [[ -n "$1" ]] && __gsname "$1" || { error "Must supply value to argument!"; exit; }
         ;;
       -l | --location )
         shift
         verbose "Setting app location to $1"
-        [ ! -z "$1" ] && __gsloc "$1" || ( error "Must supply value to argument!"; exit )
+        [[ -n "$1" ]] && __gsloc "$1" || { error "Must supply value to argument!"; exit; }
         ;;
       -o | --options )
         # This should be last, otherwise the function may fail, make sure next 2 args are options
@@ -338,11 +338,11 @@ __args() {
         ;;
       -C | --config )
         shift
-        [ ! -z "$1" ] && __gscfg "$@" || ( error "Must supply config option to get/set or 'list'!"; exit )
+        [[ -n "$1" ]] && __gscfg "$@" || { error "Must supply config option to get/set or 'list'!"; exit; }
         exit;;
       --reset-cfg )
         echo "Resetting CLApp to default configuration..."
-        cp -rf $(find $HOME -type d -name clapp)/.clapp $HOME && echo "CLApp's config has been reset!" || echo "Failed to reset defaults!"
+        cp -rf "$(find $HOME -type d -name clapp)"/.clapp "$HOME" && echo "CLApp's config has been reset!" || echo "Failed to reset defaults!"
         exit;;
       -\? | -h | --help )
         echo "`cat $HOME/.clapp/help`"
@@ -352,13 +352,13 @@ __args() {
         exit;;
       --update )
         # Clapp does this by default, this ensures clapp doesn't continue execution
-        [[ `diff $HOME/bin/clapp $(find $HOME -type d -name clapp)/clapp` ]] || log "CLApp up to date!"
+        [[ $(diff "$HOME/bin/clapp" "$(find $HOME -type d -name clapp)/clapp") ]] || log "CLApp up to date!"
         exit;;
       --docs )
         shift
-        local sys=`uname -a`
+        local sys="$(uname -a)"
         if [[ $sys =~ 'MINGW' || $sys =~ 'WSL' ]]; then
-          ( "`find "$([[ "$sys" =~ 'WSL' ]] && echo "/mnt")""/c/Program Files (x86)/" -type f -name msedge.exe 2>/dev/null | head -1`" $prgroot/docs/index.html & )
+          "$(find "$([[ "$sys" =~ 'WSL' ]] && echo "/mnt")""/c/Program Files (x86)/" -type f -name msedge.exe 2>/dev/null | head -1)" $prgroot/docs/index.html &
         fi
         exit;;
       -V | --verbose )
