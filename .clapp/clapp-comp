@@ -9,12 +9,11 @@ _clapp_completions() {
   local CONFIGOPTS="list RESET"
   local ARGS="-t -n -l -o -C -? -h -v -V --type --name --location --options --config --verbose --reset-cfg --help --version --update --docs"
   local TYPES="bash python node javascript sh py js"
-  local OPTIONS="src repo"
-
-  # if [[ "$cur" == -* ]]; then
-  #   COMPREPLY=( $(compgen -W "$ARGS" -- "$cur") )
-  #   return 0
-  # fi
+  local OPTIONS="src= repo="
+  local BASHOPTIONS="altargfunc= commands= states= allone="
+  local PYOPTS="venv="
+  local JSOPTS="venv= utils= style="
+  local FOUNDTYPE
   
   case "${prev}" in
     clapp )
@@ -27,7 +26,25 @@ _clapp_completions() {
       COMPREPLY=( $(compgen -W "$(ls -a | grep '/')" -- "$cur") )
       return 0;;
     -o | --options )
-      COMPREPLY=( $(compgen -W "$OPTIONS" -- "$cur") )
+      # Search for a given type in the command string
+      for word in "${COMP_WORDS[@]}"; do
+        if [[ "$word" =~ 'sh' ]]; then
+          FOUNDTYPE=true
+          COMPREPLY=( $(compgen -W "$BASHOPTIONS" -- "$cur") )
+          break
+        elif [[ "$word" == 'js' || "$word" == 'node' || "$word" == 'javascript' ]]; then
+          FOUNDTYPE=true
+          COMPREPLY=( $(compgen -W "$JSOPTS" -- "$cur") )
+          break
+        elif [[ "$word" =~ 'py' ]]; then
+          FOUNDTYPE=true
+          COMPREPLY=( $(compgen -W "$PYOPTS" -- "$cur") )
+          break
+        fi
+      done
+      if [[ -z "$FOUNDTYPE" ]]; then
+        COMPREPLY=( $(compgen -W "$OPTIONS" -- "$cur") )
+      fi
       return 0;;
     -C | --config )
       COMPREPLY=( $(compgen -W "$CONFIGOPTS $RULES" -- "$cur") )
@@ -36,6 +53,19 @@ _clapp_completions() {
       COMPREPLY=( $(compgen -W "$ARGS" -- "$cur") )
       return 0;;
   esac
+
+  # if [[ "$cur" == 'style=' ]]; then
+  #   COMPREPLY=( $(compgen -W "M S P s" -- "$cur") )
+  #   return 0
+  # fi
+  # if [[ "$cur" =~ '^style=.' ]]; then
+  #   COMPREPLY=( $(compgen -W "E" -- "$cur") )
+  #   return 0
+  # fi
+  # if [[ "$cur" =~ '^style=..' ]]; then
+  #   COMPREPLY=( $(compgen -W "R A E J H" -- "$cur") )
+  #   return 0
+  # fi
 }
 
 complete -F _clapp_completions clapp
