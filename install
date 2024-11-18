@@ -11,6 +11,8 @@ install() {
   cp -f "$repo"/.clapp/version "$HOME"/.clapp/version || return 1
   cp -f -r "$repo"/.clapp/assets "$HOME"/.clapp/ || return 1
   cp -f -r "$repo"/.clapp/docs "$HOME"/.clapp/ || return 1
+  # Attempt to add completion to system, otherwise default to ~/.d/.c/
+  [[ "$1" == "--sys" ]] && { [[ -e "/etc/bash_completion.d/clapp-comp.sh" ]] || cp -f "$repo/.clapp/clapp-comp" "/etc/bash_completion.d/clapp-comp.sh"; } || { [[ -e "$HOME/.d/clapp-comp" ]] || cp -f "$repo/.clapp/clapp-comp" "$HOME/.d/clapp-comp"; }
   echo "CLApp installed!"
 }
 
