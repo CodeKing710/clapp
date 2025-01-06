@@ -59,7 +59,7 @@ __args() {
 		case "\$1" in
 			-C | --config )
 				shift
-				[[ ! -z "\$1" ]] && __cfg "\$@" || ( error "Must supply rule or 'list'!"; exit )
+				[[ ! -z "\$1" ]] && __cfg "\$@" || { error "Must supply rule or 'list'!"; exit; }
 				exit;;
 			--reset-cfg )
 				log "Resetting ${s_appname} to default configuration..."

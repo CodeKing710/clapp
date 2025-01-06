@@ -6,8 +6,8 @@ prgroot="$HOME/.clapp"
 sh_assets="$prgroot/assets/bash"
 js_assets="$prgroot/assets/node"
 py_assets="$prgroot/assets/python"
-s_appname="$(echo "my_app" | tr -s '[:upper:]' '[:lower:]')"
-s_apptype="$(cat $prgroot/.cfg | grep ^type= | cut -d '=' -f2 | tr -s '[:upper:]' '[:lower:]')"
+s_appname="$(echo "my_app" | tr '[:upper:]' '[:lower:]')"
+s_apptype="$(cat $prgroot/.cfg | grep ^type= | cut -d '=' -f2 | tr '[:upper:]' '[:lower:]')"
 s_apploc="$__cwd/${s_appname}"
 __srced="${s_appname}"
 if [[ "${BASH_VERSINFO[0]}" -lt 4 ]]; then
@@ -26,7 +26,7 @@ log() { printf '\e[0;1;36m[CLApp]\e[0;0;0m '"${1}\n"; }
 prompt() {
   printf '\e[0;1;36m[CLApp]\e[0;0;0m '"${1} "
   read -r yn
-  yn="$(echo "$yn" | tr -s '[:upper:]' '[:lower:]')"
+  yn="$(echo "$yn" | tr '[:upper:]' '[:lower:]')"
   [[ "${yn}" =~ 'y' ]] && return 0 || return 1
 }
 
@@ -42,15 +42,15 @@ __gsname() {
   if [ -z "$1" ]; then
     echo "$s_appname"
   else
-    s_appname="$(echo "$1" | tr -s '[:upper:]' '[:lower:]')"
-    s_apploc="$(pwd)/$(echo "$s_appname" | tr -s '[:upper:]' '[:lower:]')"
+    s_appname="$(echo "$1" | tr '[:upper:]' '[:lower:]')"
+    s_apploc="$(pwd)/$s_appname"
   fi
 }
 __gsloc() {
   if [ -z "$1" ]; then
     echo "$s_apploc"
   else
-    s_apploc="$1/$(echo "$s_appname" | tr -s '[:upper:]' '[:lower:]')"
+    s_apploc="$1/$(echo "$s_appname" | tr '[:upper:]' '[:lower:]')"
   fi
 }
 __gsopts() {
@@ -101,7 +101,7 @@ __gscfg() {
     if [[ $1 =~ '=' ]]; then
       local rule="$(echo "$1" | cut -d '=' -f1)"
       local oldvalue="$(cat "$cfg" | grep "$rule" | cut -d '=' -f2)"
-      local newvalue="$(echo "$1" | cut -d '=' -f2 | tr -s '[:upper:]' '[:lower:]')"
+      local newvalue="$(echo "$1" | cut -d '=' -f2 | tr '[:upper:]' '[:lower:]')"
       local types="$([[ "${BASH_VERSINFO[0]}" -ge 4 ]] && echo "${lists[types]}" || echo "$types")"
       case "$rule" in
         type )
@@ -449,7 +449,7 @@ __quick() {
   if [[ "$1" =~ (-V|--verbose) ]]; then shift; __DEV=true; fi
   verbose "Short-hand style usage!"
   local name="$1"
-  local type="$(echo "$s_apptype" | tr -s '[:upper:]' '[:lower:]')"
+  local type="$(echo "$s_apptype" | tr '[:upper:]' '[:lower:]')"
   local loc=""
   local opts=""
 
