@@ -7,9 +7,11 @@ __FRONTDOC=$(cat << LIB
 
 # Vars
 __cwd="\$(pwd)"
-prgroot="\$HOME/.${s_appname,,}"
+prgroot="\$HOME/.${s_appname}"
 
 declare -A lists # For any lists your app may need as reference
+# Comment out the above and uncomment the below to be legacy compliant
+#cmds="" # For any commands your app may need as reference
 
 # Config
 __loadcfg() {
@@ -42,9 +44,9 @@ __cfg() {
 LIB
 )
 __BACKDOC=$(cat << BAK
-verbose() { [[ -n "\$VERBOSE" ]] && echo -e '\\\e[0;1;35m[VERBOSE]\\\e[0;0;0m '"\$@"; }
-error() { echo -e '\\\e[0;1;31m[ERROR]\\\e[0;0;0m '"\$@" >&2; }
-log() { echo -e '\\\e[0;1;32m[${s_appname^^}]\\\e[0;0;0m '"\$@"; }
+verbose() { [[ -n "\$VERBOSE" ]] && printf '\\\e[0;1;35m[VERBOSE]\\\e[0;0;0m '"\$@\n"; }
+error() { printf '\\\e[0;1;31m[ERROR]\\\e[0;0;0m '"\$@\n" >&2; }
+log() { printf '\\\e[0;1;32m[${s_appname}]\\\e[0;0;0m '"\$@\n"; }
 BAK
 )
 __ARGFUNCDOC=$(cat << ARG
@@ -61,7 +63,7 @@ __args() {
 				exit;;
 			--reset-cfg )
 				log "Resetting ${s_appname} to default configuration..."
-				cp -rf \$(find "\$HOME" -type d -name ${s_appname,,} 2>/dev/null | head -1)/.${s_appname,,} "\$HOME/" && echo "${s_appname}'s config has been reset!" || error "Failed to reset defaults!"
+				cp -rf \$(find "\$HOME" -type d -name ${s_appname} 2>/dev/null | head -1)/.${s_appname} "\$HOME/" && echo "${s_appname}'s config has been reset!" || error "Failed to reset defaults!"
 				exit;;
 			-\\? | -h | --help )
 				cat "\$prgroot/help"
@@ -105,7 +107,7 @@ __args() {
 				return;; # So the function doesn't endlessly recurse
 			--reset-cfg )
 				log "Resetting ${s_appname} to default configuration..."
-				cp -rf \$(find "\$HOME" -type d -name ${s_appname,,} 2>/dev/null | head -1)/.${s_appname,,} "\$HOME/" && echo "${s_appname}'s config has been reset!" || error "Failed to reset defaults!"
+				cp -rf \$(find "\$HOME" -type d -name ${s_appname} 2>/dev/null | head -1)/.${s_appname} "\$HOME/" && echo "${s_appname}'s config has been reset!" || error "Failed to reset defaults!"
 				exit;;
 			-\\? | -h | --help )
 				cat "\$prgroot/help"
@@ -132,15 +134,17 @@ __args() {
 ALT
 )
 __CMDFUNCDOC=$(cat << CMD
-lists[cmd]="^(config|help|version)$" # To be tested against
+lists[cmds]="^(config|help|version)$" # To be tested against
+#cmds="^(config|help|version)$" # Uncomment this one and comment the above to be legacy compliant
 __cmds() {
 	# Process commands
 	# Adjust the args command accordingly if desired
 	[[ -z "\$1" ]] && cat "\$prgroot"/help | head -1 && exit
+	\$1="\$(echo "\$1" | tr -s '[:upper:]' '[:lower:]')"
 	while [[ true ]]; do
 		# End case statements with 'exit;;' to run just the one command
 		# Otherwise use 'exit;;' when you want to bail out due to erroneous behaviour
-		case "\${1,,}" in
+		case "\${1}" in
 			config )
 				shift; [ ! -z "\$1" ] && __cfg "\$@" || ( error "Must supply rule or 'list'!"; exit )
 				return;; # So the function doesn't endlessly recurse
@@ -171,8 +175,16 @@ __STATEDOC=$(cat << STATE
 declare -A states
 states[cfg]="" # Any text within a bool state signifies true, less is better
 
+# Uncomment this and comment out the above to be legacy compliant
+# declare -a state_keys
+# declare -a state_values
+
+# Set extglob state to ensure case statements work properly in __cmds()
+shopt -s extglob
+
 # Add commands to the regex string below, separated by '|'
 lists[cmds]="^(config|verbose|help|version)$"
+cmds="^(config|verbose|help|version)$" # Uncomment this one and comment the above to be legacy compliant
 
 __args() {
 	# Process args
@@ -184,7 +196,7 @@ __args() {
 				;;
 			--reset-cfg )
 				log "Resetting ${s_appname} to default configuration..."
-				cp -rf \$(find "\$HOME" -type d -name ${s_appname,,} 2>/dev/null | head -1)/.${s_appname,,} "\$HOME/" && echo "${s_appname}'s config has been reset!" || error "Failed to reset defaults!"
+				cp -rf \$(find "\$HOME" -type d -name ${s_appname} 2>/dev/null | head -1)/.${s_appname} "\$HOME/" && echo "${s_appname}'s config has been reset!" || error "Failed to reset defaults!"
 				exit;;
 			-V | --verbose )
 				VERBOSE=true
@@ -198,6 +210,8 @@ __args() {
 				exit;;
 			* )
 				# Catch-all
+				# Change the line below to the commented one to be legacy compliant
+				#if [[ "\$1" =~ \${cmds} ]]; then
 				if [[ "\$1" =~ \${lists[cmds]} ]]; then
 					__cmds "\$1"
 					return 0
@@ -233,6 +247,7 @@ __cmds() {
 					__args "\$1"
 					return 0
 				else
+					# Adjust the section '\${lists[cmds]}' to '\${cmds}' if you want to be legacy compliant
 					verbose "Grepped command: '\$(echo "\${lists[cmds]}" | sed -e 's/\\^\\|[\\(]\\|[\\)]\\|\\\$//g' -e 's/[\\|]/\\\n/g' | grep "\$1")'"
 					error "'\$1' is not a command!"
 					error "Did you mean to use '\$(echo "\${lists[cmds]}" | sed -e 's/\\^\\|[\\(]\\|[\\)]\\|\\\$//g' -e 's/[\\|]/\\\n/g' | grep "\$1")'?"

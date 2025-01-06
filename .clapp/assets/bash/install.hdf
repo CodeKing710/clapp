@@ -8,15 +8,15 @@ install() {
 	local repo="\$(find "\$HOME" -type d -name $__srced 2>/dev/null | grep repo)"
 	
 	# Preprocess
-	[[ ! -e "\$HOME/.${s_appname,,}" ]] && mkdir "\$HOME/.${s_appname,,}"
+	[[ ! -e "\$HOME/.${s_appname}" ]] && mkdir "\$HOME/.${s_appname}"
 
 	# Install
 	cp -f "\$repo"/$__srced "\$HOME"/bin || return 1
-	cp -f "\$repo"/.${s_appname,,}/.lib "\$HOME"/.${s_appname,,} || return 1
-	cp -f "\$repo"/.${s_appname,,}/help "\$HOME"/.${s_appname,,} || return 1
-	cp -f "\$repo"/.${s_appname,,}/version "\$HOME"/.${s_appname,,} || return 1
+	cp -f "\$repo"/.${s_appname}/.lib "\$HOME"/.${s_appname} || return 1
+	cp -f "\$repo"/.${s_appname}/help "\$HOME"/.${s_appname} || return 1
+	cp -f "\$repo"/.${s_appname}/version "\$HOME"/.${s_appname} || return 1
 	# Uncomment if you desire configurables
-	#[[ ! -e "\$HOME"/.${s_appname,,}/.cfg ]] && { cp -f "\$repo"/.${s_appname,,}/.cfg "\$HOME"/.${s_appname,,}/.cfg || return 1; }
+	#[[ ! -e "\$HOME"/.${s_appname}/.cfg ]] && { cp -f "\$repo"/.${s_appname}/.cfg "\$HOME"/.${s_appname}/.cfg || return 1; }
 
 	# Comment if you want quiet installation
 	echo "$s_appname installed!"

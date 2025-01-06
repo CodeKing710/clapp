@@ -1,23 +1,34 @@
 #!/bin/bash
 
 # Funcs and vars
+__cwd="$(pwd)"
 prgroot="$HOME/.clapp"
 sh_assets="$prgroot/assets/bash"
 js_assets="$prgroot/assets/node"
 py_assets="$prgroot/assets/python"
-s_appname="my_app"
-s_apptype="$(cat $prgroot/.cfg | grep ^type= | cut -d '=' -f2)"
-s_apploc="$PWD/${s_appname,,}"
-__srced="${s_appname,,}"
-declare -A s_appopts
-declare -A lists # Setup for bash clapp apps
-lists[types]="^(bash|sh|py|python|node|js|javascript)$"
-__cwd="$(pwd)"
+s_appname="$(echo "my_app" | tr -s '[:upper:]' '[:lower:]')"
+s_apptype="$(cat $prgroot/.cfg | grep ^type= | cut -d '=' -f2 | tr -s '[:upper:]' '[:lower:]')"
+s_apploc="$__cwd/${s_appname}"
+__srced="${s_appname}"
+if [[ "${BASH_VERSINFO[0]}" -lt 4 ]]; then
+  declare -a s_appopts_k
+  declare -a s_appopts_v
+  types="^(bash|sh|py|python|node|js|javascript)$"
+else
+  declare -A s_appopts
+  declare -A lists # Setup for bash clapp apps
+  lists[types]="^(bash|sh|py|python|node|js|javascript)$"
+fi
 
-error() { echo -e '\e[0;1;31m[ERROR]\e[0;0;0m '"${1}" >&2; }
-verbose() { [[ "$__DEV" == "true" ]] && echo -e '\e[0;1;95m[VERBOSE]\e[0;0;0m '"${1}"; }
-log() { echo -e '\e[0;1;36m[CLApp]\e[0;0;0m '"${1}"; }
-prompt() { echo -en '\e[0;1;36m[CLApp]\e[0;0;0m '"${1} "; read -r yn; [[ "${yn,,}" =~ 'y' ]] && return 0 || return 1; }
+error() { printf '\e[0;1;31m[ERROR]\e[0;0;0m '"${1}\n" >&2; }
+verbose() { [[ "$__DEV" == "true" ]] && printf '\e[0;1;95m[VERBOSE]\e[0;0;0m '"${1}\n"; }
+log() { printf '\e[0;1;36m[CLApp]\e[0;0;0m '"${1}\n"; }
+prompt() {
+  printf '\e[0;1;36m[CLApp]\e[0;0;0m '"${1} "
+  read -r yn
+  yn="$(echo "$yn" | tr -s '[:upper:]' '[:lower:]')"
+  [[ "${yn}" =~ 'y' ]] && return 0 || return 1
+}
 
 # Getter/Setters for states
 __gstype() {
@@ -31,22 +42,30 @@ __gsname() {
   if [ -z "$1" ]; then
     echo "$s_appname"
   else
-    s_appname="$1"
-    s_apploc="`pwd`/${s_appname,,}"
+    s_appname="$(echo "$1" | tr -s '[:upper:]' '[:lower:]')"
+    s_apploc="$(pwd)/$(echo "$s_appname" | tr -s '[:upper:]' '[:lower:]')"
   fi
 }
 __gsloc() {
   if [ -z "$1" ]; then
     echo "$s_apploc"
   else
-    s_apploc="$1/${s_appname,,}"
+    s_apploc="$1/$(echo "$s_appname" | tr -s '[:upper:]' '[:lower:]')"
   fi
 }
 __gsopts() {
   if [ -z "$1" ]; then
-    for key in "${!s_appopts[@]}"; do
-        echo "$key: ${s_appopts[$key]}"
-    done
+    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+      for key in "${!s_appopts[@]}"; do
+          echo "$key: ${s_appopts[$key]}"
+      done
+      unset key
+    else
+      for key in "${!s_appopts_k[@]}"; do
+        echo "${s_appopts_k[$key]}: ${s_appopts_v[$key]}"
+      done
+      unset key
+    fi
   else
     for arg in "$@"; do
       local option="$(echo "$arg" | cut -d '=' -f1)"
@@ -61,7 +80,12 @@ __gsopts() {
       elif [[ "$option" == "location" ]]; then
         s_apploc="$value"
       else
-        s_appopts[$option]="$value"
+        if [[ "${BASH_VERSINFO[0]}" -lt 4 ]]; then
+          s_appopts_k+=("$option")
+          s_appopts_v+=("$value")
+        else
+          s_appopts[$option]="$value"
+        fi
       fi
     done
   fi
@@ -77,10 +101,11 @@ __gscfg() {
     if [[ $1 =~ '=' ]]; then
       local rule="$(echo "$1" | cut -d '=' -f1)"
       local oldvalue="$(cat "$cfg" | grep "$rule" | cut -d '=' -f2)"
-      local newvalue="$(echo "$1" | cut -d '=' -f2)"
+      local newvalue="$(echo "$1" | cut -d '=' -f2 | tr -s '[:upper:]' '[:lower:]')"
+      local types="$([[ "${BASH_VERSINFO[0]}" -ge 4 ]] && echo "${lists[types]}" || echo "$types")"
       case "$rule" in
         type )
-          if [[ ! "${newvalue,,}" =~ ${lists[types]} ]]; then
+          if [[ ! "${newvalue}" =~ $types ]]; then
             error "Type value must be Bash, Node, or Python!"
           else
             rwrite
@@ -105,9 +130,16 @@ __gscfg() {
 
 # Functionality
 __mknode() {
-  [[ $(command -v npm || command -v node) ]] || { error "NodeJS Not Installed!"; exit; }
+  [[ -z "$(command -v npm || command -v node)" ]] || { error "NodeJS Not Installed!"; exit; }
   __opts # Process general options
-  [[ -n "${s_appopts[venv]}" ]] && __VENV=true
+  if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+    [[ -n "${s_appopts[venv]}" ]] && __VENV=true
+  else
+    for value in "${s_appopts_k[@]}"; do
+      [[ "$value" == "venv" ]] && { __VENV=true; break; }
+    done
+    unset value
+  fi
 
   # Process Node-specific options
   # web: process string to respective packages
@@ -121,7 +153,14 @@ __mknode() {
   local views=""
   local utils=""
   local express=""
-  [[ "${s_appopts[utils]}" ]] && utils=true
+  if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+    [[ -n "${s_appopts[utils]}" ]] && utils=true
+  else
+    for value in "${s_appopts_k[@]}"; do
+      [[ "$value" == "utils" ]] && { utils=true; break; }
+    done
+    unset value
+  fi
   procstr() {
     local db="${1:0:1}"
     local proc="${1:1:1}"
@@ -175,7 +214,14 @@ __mknode() {
     esac
     pkginstallstr=$(echo "$pkginstallstr" | xargs)
   }
-  [[ -n "${s_appopts[style]}" ]] && procstr "${s_appopts[style]}"
+  if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+    [[ -n "${s_appopts[style]}" ]] && procstr "${s_appopts[style]}"
+  else
+    for key in "${!s_appopts_k[@]}"; do
+      [[ "${s_appopts_k[$key]}" == "style" ]] && { procstr "${s_appopts_v[$key]}"; break; }
+    done
+    unset key
+  fi
 
   # Import respective templates
   source "$js_assets/main.hdf"
@@ -229,7 +275,14 @@ __mkpy() {
   if [[ ! $(command -v python) && ! $(command -v python3) ]]; then error "Python Not Installed!"; exit; fi
   __opts
 
-  [[ -n "${s_appopts[venv]}" ]] && __VENV=true
+  if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+    [[ -n "${s_appopts[venv]}" ]] && __VENV=true
+  else
+    for value in "${s_appopts_k[@]}"; do
+      [[ "$value" == "venv" ]] && { __VENV=true; break; }
+    done
+    unset value
+  fi
 
   source "$py_assets/main.hdf" # __PYAPP
   touch "$s_apploc/version"
@@ -244,26 +297,37 @@ __mkpy() {
 __mksh() {
   # Process app options and properties
   __opts
-  [[ -n "${s_appopts[altargfunc]}" ]] && __ALT=true
-  [[ -n "${s_appopts[commands]}" ]] && __CMD=true
-  [[ -n "${s_appopts[states]}" ]] && { unset __CMD __ALT; __STATE=true; } # Can't have states with original options processing functions
+  if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+    [[ -n "${s_appopts[altargfunc]}" ]] && __ALT=true
+    [[ -n "${s_appopts[commands]}" ]] && __CMD=true
+    [[ -n "${s_appopts[states]}" ]] && { unset __CMD __ALT; __STATE=true; } # Can't have states with original options processing functions
+    [[ -n "${s_appopts[allone]}" ]] && ALLONE=true
+  else
+    for value in "${s_appopts_k[@]}"; do
+      [[ "$value" == "altargfunc" ]] && __ALT=true
+      [[ "$value" == "commands" ]] && __CMD=true
+      [[ "$value" == "states" ]] && { unset __CMD __ALT; __STATE=true; } # Can't have states with original options processing functions
+      [[ "$value" == "allone" ]] && ALLONE=true
+    done
+    unset value
+  fi
 
   # Pull HDFs (__SHINSTALL, __SHAPP, __SHLIB)
   source "$sh_assets/install.hdf"
   source "$sh_assets/main.hdf"
   source "$sh_assets/lib.hdf"
   # Generate based on all-in-one
-  if [[ -n "${s_appopts[allone]}" ]]; then
-    echo -e "#!/bin/bash\n\nversion=\"${s_appname} - v1.0.0\"\nhelp=\"\"\n\n$__SHLIB\n$__SHAPP\nunset version help" > "$s_apploc/${s_appname,,}"
-    chmod ug+x "$s_apploc/${s_appname,,}"
+  if [[ -n "$ALLONE" ]]; then
+    echo -e "#!/bin/bash\n\nversion=\"${s_appname} - v1.0.0\"\nhelp=\"\"\n\n$__SHLIB\n$__SHAPP\nunset version help" > "$s_apploc/${s_appname}"
+    chmod ug+x "$s_apploc/${s_appname}"
   else
-    mkdir "$s_apploc/.${s_appname,,}"
-    echo "${s_appname} - v1.0.0" > "$s_apploc/.${s_appname,,}/version"
-    echo "Usage: ${s_appname,,} [options] <args>" > "$s_apploc/.${s_appname,,}/help"
-    echo -e "#!/bin/bash\n\n$__SHLIB" > "$s_apploc/.${s_appname,,}/.lib"
-    echo -e "#!/bin/bash\n\n$__SHAPP" > "$s_apploc/${s_appname,,}"
-    chmod ug+x "$s_apploc/.${s_appname,,}/.lib"
-    chmod ug+x "$s_apploc/${s_appname,,}"
+    mkdir "$s_apploc/.${s_appname}"
+    echo "${s_appname} - v1.0.0" > "$s_apploc/.${s_appname}/version"
+    echo "Usage: ${s_appname} [options] <args>" > "$s_apploc/.${s_appname}/help"
+    echo -e "#!/bin/bash\n\n$__SHLIB" > "$s_apploc/.${s_appname}/.lib"
+    echo -e "#!/bin/bash\n\n$__SHAPP" > "$s_apploc/${s_appname}"
+    chmod ug+x "$s_apploc/.${s_appname}/.lib"
+    chmod ug+x "$s_apploc/${s_appname}"
   fi
 
   # Generate install file
@@ -284,14 +348,20 @@ __opts() {
     error "App with that name already exists!"
     prompt "Would you like to overwrite the existing app? [Y/n]" || exit 1
   }
+  if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+    __srced="$([[ -n ${s_appopts[src]} ]] && echo "${s_appname}/src" || echo "${s_appname}")"
+  else
+    for key in "${!s_appopts_k[@]}"; do
+      [[ "${s_appopts_k[$key]}" == "src" ]] && __srced="${s_appname}/src" || __srced="${s_appname}"
+    done
+  fi
 
-  __srced=$([ ${s_appopts[src]} ] && echo ${s_appname,,}/src || echo ${s_appname,,})
   log "Generating $s_appname in location $s_apploc..."
   verbose "Options:\n$(__gsopts)"
   [[ ! -e "$s_apploc" ]] && mkdir "$s_apploc"
 
   # Parse general options
-  for key in "${!s_appopts[@]}"; do
+  for key in "$([[ "${BASH_VERSINFO[0]}" -ge 4 ]] && echo "${!s_appopts[@]}" || echo "${s_appopts_k[@]}")"; do
     case "$key" in
       # Boolean
       src )
@@ -379,12 +449,12 @@ __quick() {
   if [[ "$1" =~ (-V|--verbose) ]]; then shift; __DEV=true; fi
   verbose "Short-hand style usage!"
   local name="$1"
-  local type="${s_apptype,,}"
+  local type="$(echo "$s_apptype" | tr -s '[:upper:]' '[:lower:]')"
   local loc=""
   local opts=""
 
   while [[ -n "$1" ]]; do
-    if [[ "$1" =~ ${lists[types]} ]]; then
+    if [[ "$1" =~ $([[ "${BASH_VERSINFO[0]}" -ge 4 ]] && echo ${lists[types]} || echo $types) ]]; then
       type="$1"
     elif [[ "$1" =~ (^\=)/ ]]; then
       loc="$1"

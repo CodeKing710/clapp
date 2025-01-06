@@ -6,39 +6,39 @@ __MAIN=$(cat << APP
 
 # $s_appname's main code
 
-autoupdate="\$(cat \$HOME/.${s_appname,,}/.cfg | grep 'autoup' | cut -d '=' -f2)"
+autoupdate="\$(cat \$HOME/.${s_appname}/.cfg | grep 'autoup' | cut -d '=' -f2)"
 repo="\$(find \$HOME -type d -name "$__srced" 2>/dev/null | grep repo)"
-[[ ! -e "\$HOME"/.${s_appname,,} ]] && mkdir "\$HOME/.${s_appname,,}" && "\$repo/install"
+[[ ! -e "\$HOME"/.${s_appname} ]] && mkdir "\$HOME/.${s_appname}" && "\$repo/install"
 
 # Check for unit test
-if [[ "\$${s_appname^^}_TST" == "true" ]]; then
+if [[ "\$${s_appname}_TST" == "true" ]]; then
 	# Load the lib from the repo and set prgroot to repo
-	echo -e "[${s_appname^^}] UNIT TEST MODE! READING FROM REPO!"
-	source "\$repo"/.${s_appname,,}/.lib
-	prgroot="\$repo/.${s_appname,,}"
+	echo -e "[${s_appname}] UNIT TEST MODE! READING FROM REPO!"
+	source "\$repo"/.${s_appname}/.lib
+	prgroot="\$repo/.${s_appname}"
 elif [[ "\$autoupdate" == "true" ]]; then
 	# Check for updates
-	if [[ -n "\$(diff "\$repo"/.${s_appname,,}/.lib "\$HOME"/.${s_appname,,}/.lib)" || -n "\$(diff "\$repo"/.${s_appname,,}/help "\$HOME"/.${s_appname,,}/help)" || -n "\$(diff "\$repo"/.${s_appname,,}/version "\$HOME"/.${s_appname,,}/version)" || -n "\$(diff "\$repo"/${s_appname,,} "\$HOME"/bin/${s_appname,,})" ]]; then "\$repo/install"; fi
+	if [[ -n "\$(diff "\$repo"/.${s_appname}/.lib "\$HOME"/.${s_appname}/.lib)" || -n "\$(diff "\$repo"/.${s_appname}/help "\$HOME"/.${s_appname}/help)" || -n "\$(diff "\$repo"/.${s_appname}/version "\$HOME"/.${s_appname}/version)" || -n "\$(diff "\$repo"/${s_appname} "\$HOME"/bin/${s_appname})" ]]; then "\$repo/install"; fi
 	
 	# Load lib
-	source "\$HOME"/.${s_appname,,}/.lib
+	source "\$HOME"/.${s_appname}/.lib
 else
-	source "\$HOME"/.${s_appname,,}/.lib
+	source "\$HOME"/.${s_appname}/.lib
 fi
 
 
-__${s_appname,,}() {
+__${s_appname}() {
 APP
 )
 __END=$(cat << END
 	# Write your app's main flow here (General stub supports arg handling)
 }
 
-__${s_appname,,} "\$@"
+__${s_appname} "\$@"
 #shopt -qu extglob # Shouldn't need this as shopt stays specific to the subshell, uncomment if sourcing to parent
 
 # Cleanup for accidental sourcing
-[[ "\$\$" -eq "\$BASHPID" ]] && unset __${s_appname,,} __args __cwd autoupdate repo prgroot __loadcfg __cfg error verbose log lists __cmds states
+[[ "\$\$" -eq "\$BASHPID" ]] && unset __${s_appname} __args __cwd autoupdate repo prgroot __loadcfg __cfg error verbose log lists __cmds states
 END
 )
 __MAINCMD=$(cat << CMD

@@ -59,7 +59,7 @@ clapp() {
   if [[ "$1" =~ '-' ]]; then __args "$@"; else __quick "$@"; fi
   
   # Parse states into respective apps
-  case "${s_apptype,,}" in
+  case "${s_apptype}" in
     js | node | javascript )
       __mknode # No args required as the function relies on the states
       ;;
