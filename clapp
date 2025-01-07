@@ -3,7 +3,7 @@
 # CLApp
 # Generates folder and file structures for CLI-apps
 
-# Currently supported:
+# Currently supported (Fully Functional in Bash 4+, legacy compliance not guaranteed):
 #  - Bash
 #  - Node Web App (Various options)
 #  - Python Web App (Flask, Django)
