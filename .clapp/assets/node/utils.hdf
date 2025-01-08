@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 __UTILMAINDOC=$(cat << UTILMAIN
 exports.tvar = require('./tvar');

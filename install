@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Install script for clapp
 install() {
   local repo="$(dirname $(find "$HOME" -type d -name .clapp 2>/dev/null | grep repo))"
-  [[ "$1" == "--sys" ]] && { sudo cp -f "$repo/clapp" "/usr/local/bin" || return 1; } || { cp -f "$repo"/clapp "$HOME"/bin/clapp || return 1; }
+  cp -f "$repo"/clapp "$HOME"/bin/clapp || return 1
   [[ ! -e "$HOME/.clapp" ]] && mkdir "$HOME/.clapp"
   cp -f "$repo"/.clapp/.lib "$HOME"/.clapp/.lib || return 1
   [[ ! -e "$HOME/.clapp/.cfg" ]] && { cp -f "$repo"/.clapp/.cfg "$HOME"/.clapp/.cfg || return 1; }
@@ -11,8 +11,8 @@ install() {
   cp -f "$repo"/.clapp/version "$HOME"/.clapp/version || return 1
   cp -f -r "$repo"/.clapp/assets "$HOME"/.clapp/ || return 1
   cp -f -r "$repo"/.clapp/docs "$HOME"/.clapp/ || return 1
-  # Attempt to add completion to system, otherwise default to ~/.d/.c/
-  [[ "$1" == "--sys" ]] && { [[ -e "/etc/bash_completion.d/clapp-comp.sh" ]] || cp -f "$repo/.clapp/clapp-comp" "/etc/bash_completion.d/clapp-comp.sh"; } || { [[ -e "$HOME/.d/clapp-comp" ]] || cp -f "$repo/.clapp/clapp-comp" "$HOME/.d/clapp-comp"; }
+  # Attempt to add completion to system, otherwise default to ~/.d/
+  cp -f "$repo/.clapp/clapp-comp" "$HOME/.d/clapp-comp"
   echo "CLApp installed!"
 }
 

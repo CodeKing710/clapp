@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # SOURCE THIS FILE FOR HEREDOC INTERPOLATION
 __SHINSTALL=$(cat << INST
 #!/bin/bash

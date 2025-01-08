@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 __MODELMAINDOC=$(cat << MODELMAIN
 const mongoose = require('mongoose');

@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 __ROUTESMAINDOC=$(cat << ROUTEMAIN
 exports.main = {path: '/', ctrl: require('./main')};
 ROUTEMAIN

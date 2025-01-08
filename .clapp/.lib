@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Funcs and vars
 __cwd="$(pwd)"
