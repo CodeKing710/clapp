@@ -1,5 +1,4 @@
-Usage: clapp <name> [type] [location] [options ...]
-Alternate Usage: clapp <-n> <appname> [-t] <bash|node|python> [-l] <applocation> [-o ...]
+Usage: clapp [-V] <-n> <appname> [-t] <bash|node|python> [-l] <applocation> [-o ...]
 
 Options:
 
@@ -16,10 +15,7 @@ Options:
                     
                     Bash-Specific Options:
                     - allone: Puts lib and main program code into one file
-                    - commands: Adds function to parse commands alongside arguments
-                    - altargfunc: Utilize an alternative argument function that passes around the argument list instead delegating and returning
-                                  (adds high possibility of fork bombing your app, just be careful)
-                    - states: Utilizes a state-based processing architecture. CANNOT BE USED WITH COMMANDS OR ALTARGFUNC!
+                    - compat: Ensure's compatibilty with older bash versions with compliant code and comments for the developer
 
                     Node-Specific Options: (<= 18.x.x, CommonJS syntax)
                     - venv: Use a venv location or choose a vem venv by name
