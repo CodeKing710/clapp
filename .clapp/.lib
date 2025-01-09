@@ -1,95 +1,128 @@
 #!/usr/bin/env bash
 
-# Funcs and vars
+# This main lib file is compliant with all versions of Bash, but is optimized for Bash 4+ with an override file for Bash 3
+
+# Constants
 __cwd="$(pwd)"
 prgroot="$HOME/.clapp"
 sh_assets="$prgroot/assets/bash"
 js_assets="$prgroot/assets/node"
 py_assets="$prgroot/assets/python"
+
+# States
 s_appname="$(echo "my_app" | tr '[:upper:]' '[:lower:]')"
 s_apptype="$(cat $prgroot/.cfg | grep ^type= | cut -d '=' -f2 | tr '[:upper:]' '[:lower:]')"
 s_apploc="$__cwd/${s_appname}"
 __srced="${s_appname}"
-if [[ "${BASH_VERSINFO[0]}" -lt 4 ]]; then
-  declare -a s_appopts_k
-  declare -a s_appopts_v
-  types="^(bash|sh|py|python|node|js|javascript)$"
-else
-  declare -A s_appopts
-  declare -A lists # Setup for bash clapp apps
-  lists[types]="^(bash|sh|py|python|node|js|javascript)$"
-fi
 
-error() { printf '\e[0;1;31m[ERROR]\e[0;0;0m '"${1}\n" >&2; }
-verbose() { [[ "$__DEV" == "true" ]] && printf '\e[0;1;95m[VERBOSE]\e[0;0;0m '"${1}\n"; }
-log() { printf '\e[0;1;36m[CLApp]\e[0;0;0m '"${1}\n"; }
+# Logging and prompt functions
+error() {
+  printf '\e[0;1;31m[ERROR]\e[0;0;0m '"$@\n" >&2
+  printf "[$(date +"%m/%d/%Y %0l:%0M:%0S")][***ERROR***] $@\n" >> "$prgroot/app.log"
+}
+verbose() {
+  if [[ "$VERBOSE" == "true" ]]; then
+    printf '\e[0;1;95m[VERBOSE]\e[0;0;0m '"$@\n"
+    printf "[$(date +"%m/%d/%Y %0l:%0M:%0S")][-VERBOSE-] $@\n" >> "$prgroot/app.log"
+  fi
+}
+log() {
+  if [[ "$1" =~ ^(-f|--file|file)$ ]]; then
+    shift
+    printf "[$(date +"%m/%d/%Y %0l:%0M:%0S")][LOG] $@\n" >> "$prgroot/app.log"
+  else
+    printf '\e[0;1;36m[CLApp]\e[0;0;0m '"$@\n" | tee -a "$prgroot/app.log"
+    printf "[$(date +"%m/%d/%Y %0l:%0M:%0S")][LOG] $@\n" >> "$prgroot/app.log"
+  fi
+}
 prompt() {
-  printf '\e[0;1;36m[CLApp]\e[0;0;0m '"${1} "
-  read -r yn
+  printf '\e[0;1;36m[CLApp]\e[0;0;0m '"${1}"
+  read -rep ' ' yn
   yn="$(echo "$yn" | tr '[:upper:]' '[:lower:]')"
   [[ "${yn}" =~ 'y' ]] && return 0 || return 1
 }
 
-# Getter/Setters for states
-__gstype() {
-  if [ -z "$1" ]; then
-    echo "$s_apptype"
-  else
-    s_apptype="$1"
-  fi
-}
-__gsname() {
-  if [ -z "$1" ]; then
-    echo "$s_appname"
-  else
-    s_appname="$(echo "$1" | tr '[:upper:]' '[:lower:]')"
-    s_apploc="$(pwd)/$s_appname"
-  fi
-}
-__gsloc() {
-  if [ -z "$1" ]; then
-    echo "$s_apploc"
-  else
-    s_apploc="$1/$(echo "$s_appname" | tr '[:upper:]' '[:lower:]')"
-  fi
-}
-__gsopts() {
-  if [ -z "$1" ]; then
-    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
-      for key in "${!s_appopts[@]}"; do
-          echo "$key: ${s_appopts[$key]}"
-      done
-      unset key
-    else
-      for key in "${!s_appopts_k[@]}"; do
-        echo "${s_appopts_k[$key]}: ${s_appopts_v[$key]}"
-      done
-      unset key
-    fi
-  else
-    for arg in "$@"; do
-      local option="$(echo "$arg" | cut -d '=' -f1)"
-      local value="$(echo "$arg" | cut -d '=' -f2)"
-      verbose "Option: $option"
-      verbose "Value: $value"
-
-      if [[ "$option" == "name" ]]; then
-        s_appname="$value"
-      elif [[ "$option" == "type" ]]; then
-        s_apptype="$value"
-      elif [[ "$option" == "location" ]]; then
-        s_apploc="$value"
-      else
-        if [[ "${BASH_VERSINFO[0]}" -lt 4 ]]; then
-          s_appopts_k+=("$option")
-          s_appopts_v+=("$value")
+# Parse arguments
+__args() {
+  # Loop for command cases alongside argument parsing
+  while [[ -n "$1" ]]; do
+    # Arg parsing failure will force exit the program
+    case $1 in
+      -t | --type | type )
+        shift
+        [[ -n "$1" ]] && __gstype "$1" || { error "Must supply value to argument!"; exit 1; }
+        ;;
+      -n | --name | name )
+        shift
+        [[ -n "$1" ]] && __gsname "$1" || { error "Must supply value to argument!"; exit 1; }
+        ;;
+      -l | --location | location )
+        shift
+        [[ -n "$1" ]] && __gsloc "$1" || { error "Must supply value to argument!"; exit 1; }
+        ;;
+      -o | --options | options )
+        # This should be last, otherwise the function may fail, make sure next 2 args are options
+        shift
+        if [[ "$1" == *"="* ]]; then
+          __gsopts "$@" # Function will choose the correct one based on Bash version
         else
-          s_appopts[$option]="$value"
+          error "'-o' must only be followed by options, if you want to pass other arguments, put them before '-o'!"
+          exit 1
         fi
-      fi
-    done
-  fi
+        ;;
+      -C | --config | config )
+        shift
+        [[ -n "$1" ]] && __gscfg "$@" || { error "Must supply config option to get/set or 'list'!"; exit 1; }
+        return 0;;
+      # Singletons
+      --reset-cfg | reset-cfg )
+        echo "Resetting CLApp to default configuration..."
+        cp -rf "$(find $HOME -type d -name clapp)"/.clapp "$HOME" && echo "CLApp's config has been reset!" || echo "Failed to reset defaults!"
+        exit 0;;
+      -L | --logs | logs )
+        cat "$prgroot/app.log"
+        exit 0;;
+      -X | --clear-logs | clear-logs )
+        echo -n "" > "$prgroot/app.log"
+        log "Logs cleared!"
+        exit 0;;
+      -\? | -h | --help | help )
+        cat "$prgroot/help"
+        exit 0;;
+      -v | --version | version )
+        cat "$prgroot/version"
+        exit 0;;
+      --update | update )
+        # Clapp does this by default, this ensures clapp doesn't continue execution
+        [[ $(diff "$HOME/bin/clapp" "$(find $HOME -type d -name clapp)/clapp") ]] || log "CLApp up to date!"
+        exit 0;;
+      --docs | docs )
+        shift
+        local sys="$(uname -s)"
+        if [[ "$sys" == "Darwin" ]]; then
+          open "$prgroot/docs/index.html"
+        elif [[ "$sys" == "Linux" ]]; then
+          [[ -n "$(command -v xdg-open)" ]] && xdg-open "$prgroot/docs/index.html" 2>/dev/null || { error "Command to open docs in browser not found!"; exit 1; }
+        elif [[ "$sys" == "MINGW"* ]]; then
+          start "$prgroot/docs/index.html"
+        else
+          error "OS not supported for opening documentation!"
+        fi
+        exit 0;;
+      -V | --verbose | verbose )
+        VERBOSE=true;;
+      * )
+        error "Option '$1' not found!"
+        exit 1;;
+    esac
+    shift
+  done
+  verbose "Type: $(__gstype)"
+  verbose "Name: $(__gsname)"
+  verbose "Path: $(__gsloc)"
 }
+
+# Function to parse the config file
 __gscfg() {
   local cfg="$prgroot/.cfg"
   rwrite() {
@@ -128,355 +161,35 @@ __gscfg() {
   shift; done
 }
 
-# Functionality
-__mknode() {
-  [[ -z "$(command -v npm || command -v node)" ]] || { error "NodeJS Not Installed!"; exit; }
-  __opts # Process general options
-  if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
-    [[ -n "${s_appopts[venv]}" ]] && __VENV=true
+# Getter/Setters for non-list states (full compatibility)
+__gstype() {
+  if [ -z "$1" ]; then
+    echo "$s_apptype"
   else
-    for value in "${s_appopts_k[@]}"; do
-      [[ "$value" == "venv" ]] && { __VENV=true; break; }
-    done
-    unset value
-  fi
-
-  # Process Node-specific options
-  # web: process string to respective packages
-  # Slot 1: Mongo (M), MySQL (S), MS-SQL (s), PostgreSQL (P), None (N)
-  # Slot 2: Express (E), Node (N)
-  # Slot 3: React (R), Angular (A), EJS (E), Jade (J), HTML (H)
-  local pkginstallstr="" # Dynamically built to ensure project setup is handled by node and not by clapp
-  local viewext=""
-  # Booleans
-  local models=""
-  local views=""
-  local utils=""
-  local express=""
-  if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
-    [[ -n "${s_appopts[utils]}" ]] && utils=true
-  else
-    for value in "${s_appopts_k[@]}"; do
-      [[ "$value" == "utils" ]] && { utils=true; break; }
-    done
-    unset value
-  fi
-  procstr() {
-    local db="${1:0:1}"
-    local proc="${1:1:1}"
-    local tmpeng="${1:2:1}"
-    verbose "db: $db"
-    verbose "proc: $proc"
-    verbose "tmpeng: $tmpeng"
-    case $db in
-      M )
-        models=true
-        pkginstallstr="${pkginstallstr}mongoose "
-        ;;
-      S | P | s )
-        models=true
-        pkginstallstr="${pkginstallstr}sequelize "
-        ;;
-      * ) ;;
-    esac
-    case $proc in
-      E )
-        pkginstallstr="${pkginstallstr}express cookie-parser dotenv "
-        express=true
-        ;;
-      * ) ;;
-    esac
-    case $tmpeng in
-      R )
-        [ "$proc" = "E" ] && pkginstallstr="${pkginstallstr}react express-react-views " || pkginstallstr="${pkginstallstr}react "
-        viewext=".jsx"
-        views=true
-        ;;
-      A )
-        pkginstallstr="${pkginstallstr}angular "
-        views=true
-        ;;
-      E )
-        pkginstallstr="${pkginstallstr}ejs "
-        viewext=".ejs"
-        views=true
-        ;;
-      J )
-        pkginstallstr="${pkginstallstr}jade "
-        viewext=".jade"
-        views=true
-        ;;
-      H )
-        viewext=".html"
-        views=true
-        ;;
-      * ) ;;
-    esac
-    pkginstallstr=$(echo "$pkginstallstr" | xargs)
-  }
-  if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
-    [[ -n "${s_appopts[style]}" ]] && procstr "${s_appopts[style]}"
-  else
-    for key in "${!s_appopts_k[@]}"; do
-      [[ "${s_appopts_k[$key]}" == "style" ]] && { procstr "${s_appopts_v[$key]}"; break; }
-    done
-    unset key
-  fi
-
-  # Import respective templates
-  source "$js_assets/main.hdf"
-  source "$js_assets/utils.hdf"
-  source "$js_assets/views.hdf"
-  source "$js_assets/models.hdf"
-  source "$js_assets/routes.hdf"
-
-  # Begin setup of node project directory
-  cd "$s_apploc"
-  
-  [[ "$models" == "true" ]] && {
-    [[ ! -d "./models" ]] && mkdir ./models
-    echo "$__MODELMAINDOC" > ./models/index.js
-    echo "$__MODELUSERDOC" > ./models/user.js
-  }
-  [[ "$utils" == "true" ]] && {
-    [[ ! -d "./utils" ]] && mkdir ./utils
-    echo "$__UTILMAINDOC" > ./utils/index.js
-    echo "$__UTILVARDOC" > ./utils/tvar.js
-  }
-  [[ "$views" == "true" ]] && {
-    [[ ! -d "./views" ]] && mkdir ./views
-    [[ "$viewext" == ".ejs" ]] && {
-      echo "$__VIEWSMAINDOC" > ./views/index.ejs
-      echo "$__VIEWSHEADDOC" > ./views/head.ejs
-      echo "$__VIEWSTAILDOC" > ./views/foot.ejs
-      echo "$__VIEWSEJSMAINDOC" > ./views/404.ejs
-    } || [[ "$viewext" == ".html" ]] && {
-      echo "$__VIEWSMAINDOC" > ./views/index.html
-    }
-  }
-  [[ "$express" == "true" ]] && {
-    [[ ! -d "./public" ]] && mkdir ./public
-    [[ ! -d "./public/css" ]] && mkdir ./public/css
-    [[ ! -d "./public/js" ]] && mkdir ./public/js
-    [[ ! -d "./public/assets" ]] && mkdir ./public/assets
-    [[ ! -d "./routes" ]] && mkdir ./routes
-    echo "$__ROUTESMAINDOC" > ./routes/index.js
-    echo "$__ROUTESMAINROUTE" > ./routes/main.js
-    echo -e "#!/bin/env node\n\n$__JSAPPE" > ./index.js
-  } || echo -e "#!/bin/env node\n\n$__JSAPP" > ./index.js
-  npm init -y >>/dev/null
-  [[ ! -z "$pkginstallstr" ]] && { echo "Installing packages..."; npm i $pkginstallstr >/dev/null || return 1; } && echo "Packages installed!"
-
-  # If we got here, we succeeded
-  log "Successfully created Node app '$s_appname' in location $s_apploc!"
-  log "Refer to documentation in clapp (clapp --docs) on further setup!"
-}
-__mkpy() {
-  if [[ ! $(command -v python) && ! $(command -v python3) ]]; then error "Python Not Installed!"; exit; fi
-  __opts
-
-  if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
-    [[ -n "${s_appopts[venv]}" ]] && __VENV=true
-  else
-    for value in "${s_appopts_k[@]}"; do
-      [[ "$value" == "venv" ]] && { __VENV=true; break; }
-    done
-    unset value
-  fi
-
-  source "$py_assets/main.hdf" # __PYAPP
-  touch "$s_apploc/version"
-  touch "$s_apploc/help"
-  echo -e "$__PYAPP" > "$s_apploc/$s_appname.py"
-  chmod u+x "$s_apploc/$s_appname.py"
-
-  # If we got here, we succeeded
-  log "Successfully created Python app '$s_appname' in location $s_apploc!"
-  log "Refer to documentation in clapp (clapp --docs) on further setup!"
-}
-__mksh() {
-  # Process app options and properties
-  __opts
-  if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
-    [[ -n "${s_appopts[altargfunc]}" ]] && __ALT=true
-    [[ -n "${s_appopts[commands]}" ]] && __CMD=true
-    [[ -n "${s_appopts[states]}" ]] && { unset __CMD __ALT; __STATE=true; } # Can't have states with original options processing functions
-    [[ -n "${s_appopts[allone]}" ]] && ALLONE=true
-  else
-    for value in "${s_appopts_k[@]}"; do
-      [[ "$value" == "altargfunc" ]] && __ALT=true
-      [[ "$value" == "commands" ]] && __CMD=true
-      [[ "$value" == "states" ]] && { unset __CMD __ALT; __STATE=true; } # Can't have states with original options processing functions
-      [[ "$value" == "allone" ]] && ALLONE=true
-    done
-    unset value
-  fi
-
-  # Pull HDFs (__SHINSTALL, __SHAPP, __SHLIB)
-  source "$sh_assets/install.hdf"
-  source "$sh_assets/main.hdf"
-  source "$sh_assets/lib.hdf"
-  # Generate based on all-in-one
-  if [[ -n "$ALLONE" ]]; then
-    echo -e "#!/bin/bash\n\nversion=\"${s_appname} - v1.0.0\"\nhelp=\"\"\n\n$__SHLIB\n$__SHAPP\nunset version help" > "$s_apploc/${s_appname}"
-    chmod ug+x "$s_apploc/${s_appname}"
-  else
-    mkdir "$s_apploc/.${s_appname}"
-    echo "${s_appname} - v1.0.0" > "$s_apploc/.${s_appname}/version"
-    echo "Usage: ${s_appname} [options] <args>" > "$s_apploc/.${s_appname}/help"
-    echo -e "#!/bin/bash\n\n$__SHLIB" > "$s_apploc/.${s_appname}/.lib"
-    echo -e "#!/bin/bash\n\n$__SHAPP" > "$s_apploc/${s_appname}"
-    chmod ug+x "$s_apploc/.${s_appname}/.lib"
-    chmod ug+x "$s_apploc/${s_appname}"
-  fi
-
-  # Generate install file
-  echo "$__SHINSTALL" > "$s_apploc/install"
-  chmod ug+x "$s_apploc/install"
-
-  # If we got here, we succeeded
-  log "Successfully created Bash app '$s_appname' in location $s_apploc!"
-  log "Refer to documentation in clapp (clapp --docs) on further setup!"
-}
-
-# Parsing
-# Options take precedence over arguments
-# Setting name, type, or location in options will override
-__opts() {
-  # Begin generating folders and files, ask overwrite prompt
-  [[ -d "$s_apploc" ]] && {
-    error "App with that name already exists!"
-    prompt "Would you like to overwrite the existing app? [Y/n]" || exit 1
-  }
-  if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
-    __srced="$([[ -n ${s_appopts[src]} ]] && echo "${s_appname}/src" || echo "${s_appname}")"
-  else
-    for key in "${!s_appopts_k[@]}"; do
-      [[ "${s_appopts_k[$key]}" == "src" ]] && __srced="${s_appname}/src" || __srced="${s_appname}"
-    done
-  fi
-
-  log "Generating $s_appname in location $s_apploc..."
-  verbose "Options:\n$(__gsopts)"
-  [[ ! -e "$s_apploc" ]] && mkdir "$s_apploc"
-
-  # Parse general options
-  for key in "$([[ "${BASH_VERSINFO[0]}" -ge 4 ]] && echo "${!s_appopts[@]}" || echo "${s_appopts_k[@]}")"; do
-    case "$key" in
-      # Boolean
-      src )
-        mkdir "$s_apploc/src"
-        s_apploc="$s_apploc/src"
-        ;;
-      repo )
-        cd "$s_apploc" && git init >>/dev/null && echo "# $s_appname" > readme.md
-        log "Initialized app as repo! Don't forget to run \`git commit -a -m \"Creation of $s_appname!\"\`"
-        cd "$__cwd"
-        ;;
-    esac
-  done
-}
-__args() {
-  verbose "Arg-style usage!"
-  while [[ "$1" =~ "-" ]]; do
-    # Arg parsing failure will force exit the program
-    case $1 in
-      -t | --type )
-        shift
-        verbose "Setting app type to $1"
-        [[ -n "$1" ]] && __gstype "$1" || { error "Must supply value to argument!"; exit; }
-        ;;
-      -n | --name )
-        shift
-        verbose "Setting app name to $1"
-        [[ -n "$1" ]] && __gsname "$1" || { error "Must supply value to argument!"; exit; }
-        ;;
-      -l | --location )
-        shift
-        verbose "Setting app location to $1"
-        [[ -n "$1" ]] && __gsloc "$1" || { error "Must supply value to argument!"; exit; }
-        ;;
-      -o | --options )
-        # This should be last, otherwise the function may fail, make sure next 2 args are options
-        shift
-        if [[ "$1" =~ "=" ]]; then
-          __gsopts "$@"
-        else
-          error "'-o' must only be followed by options, if you want to pass other arguments, put them before '-o'!"
-          exit
-        fi
-        ;;
-      -C | --config )
-        shift
-        [[ -n "$1" ]] && __gscfg "$@" || { error "Must supply config option to get/set or 'list'!"; exit; }
-        exit;;
-      --reset-cfg )
-        echo "Resetting CLApp to default configuration..."
-        cp -rf "$(find $HOME -type d -name clapp)"/.clapp "$HOME" && echo "CLApp's config has been reset!" || echo "Failed to reset defaults!"
-        exit;;
-      -\? | -h | --help )
-        echo "`cat $HOME/.clapp/help`"
-        exit;;
-      -v | --version )
-        echo "`cat $HOME/.clapp/version`"
-        exit;;
-      --update )
-        # Clapp does this by default, this ensures clapp doesn't continue execution
-        [[ $(diff "$HOME/bin/clapp" "$(find $HOME -type d -name clapp)/clapp") ]] || log "CLApp up to date!"
-        exit;;
-      --docs )
-        shift
-        local sys="$(uname -a)"
-        if [[ $sys =~ 'MINGW' || $sys =~ 'WSL' ]]; then
-          "$(find "$([[ "$sys" =~ 'WSL' ]] && echo "/mnt")""/c/Program Files (x86)/" -type f -name msedge.exe 2>/dev/null | head -1)" $prgroot/docs/index.html &
-        fi
-        exit;;
-      -V | --verbose )
-        __DEV=true
-        ;;
-      * )
-        error "Option '$1' not found!"
-        exit;;
-    esac
-    shift
-  done;
-  verbose "Type: $(__gstype)"
-  verbose "Name: $(__gsname)"
-  verbose "Path: $(__gsloc)"
-}
-__quick() {
-  # CLApp's shorthand style
-  if [[ "$1" =~ (-V|--verbose) ]]; then shift; __DEV=true; fi
-  verbose "Short-hand style usage!"
-  local name="$1"
-  local type="$(echo "$s_apptype" | tr '[:upper:]' '[:lower:]')"
-  local loc=""
-  local opts=""
-
-  while [[ -n "$1" ]]; do
-    if [[ "$1" =~ $([[ "${BASH_VERSINFO[0]}" -ge 4 ]] && echo ${lists[types]} || echo $types) ]]; then
-      type="$1"
-    elif [[ "$1" =~ (^\=)/ ]]; then
-      loc="$1"
-    elif [[ "$1" =~ '=' ]]; then
-      opts="$1"
-      shift
-      while [[ "$1" =~ '=' ]]; do
-        opts="$1 $opts"
-      shift; done
-    else
-      name="$1"
-    fi
-  shift; done
-
-  if [[ -n "$opts" ]]; then
-    __gsname "$name" &>/dev/null
-    __gstype "$type" &>/dev/null
-    __gsloc "$loc" &>/dev/null
-    __gsopts "$opts" &>/dev/null
-  else
-    __gsname "$name" &>/dev/null
-    __gstype "$type" &>/dev/null
-    __gsloc "$loc" &>/dev/null
+    s_apptype="$1"
   fi
 }
+__gsname() {
+  if [ -z "$1" ]; then
+    echo "$s_appname"
+  else
+    s_appname="$(echo "$1" | tr '[:upper:]' '[:lower:]')"
+    s_apploc="$(pwd)/$s_appname"
+  fi
+}
+__gsloc() {
+  if [ -z "$1" ]; then
+    echo "$s_apploc"
+  else
+    s_apploc="$1/$(echo "$s_appname" | tr '[:upper:]' '[:lower:]')"
+  fi
+}
+
+# Load optimized lib based on current Bash version
+if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+  log file "Loading Bash 4+ optimized lib..."
+  source "$prgroot/postbash4.lib"
+else
+  log file "Loading Pre Bash 4+ optimized lib..."
+  source "$prgroot/prebash4.lib"
+fi

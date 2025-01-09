@@ -44,9 +44,9 @@ __cfg() {
 LIB
 )
 __BACKDOC=$(cat << BAK
-verbose() { [[ -n "\$VERBOSE" ]] && printf '\\\e[0;1;35m[VERBOSE]\\\e[0;0;0m '"\$@\\n"; }
-error() { printf '\\\e[0;1;31m[ERROR]\\\e[0;0;0m '"\$@\\n" >&2; }
-log() { printf '\\\e[0;1;32m[${s_appname}]\\\e[0;0;0m '"\$@\\n"; }
+verbose() { [[ -n "\$VERBOSE" || \$VERBOSE -eq 1 ]] && printf '\\\e[0;1;35m[VERBOSE]\\\e[0;0;0m '"\$@\\\n"; }
+error() { printf '\\\e[0;1;31m[ERROR]\\\e[0;0;0m '"\$@\\\n" >&2; }
+log() { printf '\\\e[0;1;32m[${s_appname}]\\\e[0;0;0m '"\$@\\\n"; }
 BAK
 )
 __ARGFUNCDOC=$(cat << ARG

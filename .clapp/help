@@ -40,23 +40,27 @@ Options:
 
   -V | --verbose    Detailed output on CLApp's operations
     
-  -h | --help       Shows this page
+  -h | --help       Shows this page and exit
 
-  -v | --version    Shows current version of clapp
+  -v | --version    Shows current version and exit
 
 Special Options:
 
   --update
-      For updating CLApp if you have auto-update disabled,
-      or to ensure CLApp is up to date before continuing use
-      since it will only run updates then exit
+    For updating CLApp if you have auto-update disabled,
+    or to ensure CLApp is up to date before continuing use
+    since it will only run updates then exit
 
   --reset-cfg
-      Resets CLApp's configuration to default settings
+    Resets CLApp's configuration to default settings and exit
 
   --docs
-      Opens CLApp's documentation in your default browser
+    Opens CLApp's documentation in your default browser
 
-  
+  -l | --logs
+    Show CLApp's app logs and exit
+
+  -X | --clear-logs
+    Clear CLApp's app logs and exit
 
 For more information and available commands, visit https://github.com/CodeKing710/clapp#readme.

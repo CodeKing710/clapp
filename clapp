@@ -7,56 +7,51 @@
 #  - Bash
 #  - Node Web App (Various options)
 #  - Python Web App (Flask, Django)
-#
 
+shopt -s extglob
+
+# Ensure clapp is installed if the user tries to run it from the repo
+[[ ! -e "$HOME/.clapp" ]] && mkdir "$HOME"/.clapp && "$repo/install"
+
+# Grab repo and begin autoupdate process
 autoupdate="$(cat "$HOME"/.clapp/.cfg | grep 'autoup' | cut -d '=' -f2)"
 repo="$(dirname $(find "$HOME" -type d -name .clapp 2>/dev/null | grep repo))"
-[[ ! -e "$HOME/.clapp" ]] && mkdir "$HOME"/.clapp && "$repo/install"
+
+if [[ "$autoupdate" == "true" ]]; then
+  # Check for updates
+  if [[ -n "$(diff "$repo"/.clapp/.lib "$HOME"/.clapp/.lib)" \
+  || -n "$(diff "$repo"/.clapp/postbash4.lib "$HOME"/.clapp/postbash4.lib)" \
+  || -n "$(diff "$repo"/.clapp/prebash4.lib "$HOME"/.clapp/prebash4.lib)" \
+  || -n "$(diff "$repo"/.clapp/version "$HOME"/.clapp/version)" \
+  || -n "$(diff "$repo"/.clapp/help "$HOME"/.clapp/help)" \
+  || -n "$(diff "$repo"/.clapp/clapp-comp "$HOME"/.d/clapp-comp)" \
+  || -n "$(diff "$repo"/.clapp/assets/bash "$HOME"/.clapp/assets/bash)" \
+  || -n "$(diff "$repo"/.clapp/assets/node "$HOME"/.clapp/assets/node)" \
+  || -n "$(diff "$repo"/.clapp/assets/python "$HOME"/.clapp/assets/python)" \
+  || -n "$(diff "$repo"/.clapp/docs "$HOME"/.clapp/docs)" \
+  || -n "$(diff "$repo"/clapp "$HOME"/bin/clapp)" ]]; then "$repo/install"
+  fi
+fi
+
+# Load lib
+source "$HOME"/.clapp/.lib
 
 # Check for unit test
 if [[ "$CLAPP_TST" == "true" ]]; then
   # Load the lib from the repo and set prgroot to repo
   echo -e "UNIT TEST MODE! READING FROM REPO!"
-  source "$repo"/.clapp/.lib
   prgroot="$repo"/.clapp
-elif [[ "$autoupdate" == "true" ]]; then
-  # Check for updates
-  if [[ -z "$([[ -e /usr/local/bin ]] && find /usr/local/bin -type f -name clapp)" ]]; then
-    if [[ -n "$(diff "$repo"/.clapp/.lib "$HOME"/.clapp/.lib)" \
-    || -n "$(diff "$repo"/.clapp/version "$HOME"/.clapp/version)" \
-    || -n "$(diff "$repo"/.clapp/help "$HOME"/.clapp/help)" \
-    || -n "$(diff "$repo"/.clapp/assets/bash "$HOME"/.clapp/assets/bash)" \
-    || -n "$(diff "$repo"/.clapp/assets/node "$HOME"/.clapp/assets/node)" \
-    || -n "$(diff "$repo"/.clapp/assets/python "$HOME"/.clapp/assets/python)" \
-    || -n "$(diff "$repo"/.clapp/docs "$HOME"/.clapp/docs)" \
-    || -n "$(diff "$repo"/clapp "$HOME"/bin/clapp)" ]]; then "$repo/install"; fi
-  else
-    if [[ -n "$(diff "$repo"/.clapp/.lib "$HOME"/.clapp/.lib)" \
-    || -n "$(diff "$repo"/.clapp/version "$HOME"/.clapp/version)" \
-    || -n "$(diff "$repo"/.clapp/help "$HOME"/.clapp/help)" \
-    || -n "$(diff "$repo"/.clapp/assets/bash "$HOME"/.clapp/assets/bash)" \
-    || -n "$(diff "$repo"/.clapp/assets/node "$HOME"/.clapp/assets/node)" \
-    || -n "$(diff "$repo"/.clapp/assets/python "$HOME"/.clapp/assets/python)" \
-    || -n "$(diff "$repo"/.clapp/docs "$HOME"/.clapp/docs)" \
-    || -n "$(diff "$repo"/clapp /usr/local/bin/clapp)" ]]; then "$repo/install" --sys; fi
-  fi
-
-  # Load lib
-  source "$HOME"/.clapp/.lib
-else
-  source "$HOME"/.clapp/.lib
 fi
 
 # Main container
 clapp() {
   if [ -z "$1" ]; then
     echo "$(cat "$HOME"/.clapp/help | head -1)"
-    return
+    exit 1
   fi
 
-  # Set prog states or list usage since this cannot run without args
-  [[ "$1" =~ ^(-V|--verbose)$ ]] && __DEV=true && shift
-  if [[ "$1" =~ '-' ]]; then __args "$@"; else __quick "$@"; fi
+  # Run arg parser
+  __args "$@"
   
   # Parse states into respective apps
   case "${s_apptype}" in
@@ -81,4 +76,6 @@ clapp() {
 clapp "$@"
 
 # Cleanup when sourced (should not be sourced!)
-# unset clapp __args __mknode __mkpy __mksh __opts __gstype __gsname __gsloc __gsopts __errtxt __systxt __devtxt __cwd __srced s_appname s_apptype s_apploc s_appopts autoupdate repo __ALT __CMD
+[[ "$$" -eq "$BASHPID" ]] && { unset clapp __args __mknode __mkpy __mksh __opts __gstype __gsname __gsloc __gsopts __errtxt __systxt __devtxt __cwd __srced s_appname s_apptype s_apploc s_appopts autoupdate repo __ALT __CMD; shopt -u extglob; }
+
+exit 0 # Ensure a good exit status upon final completion unless the program breaks earlier

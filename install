@@ -6,6 +6,8 @@ install() {
   cp -f "$repo"/clapp "$HOME"/bin/clapp || return 1
   [[ ! -e "$HOME/.clapp" ]] && mkdir "$HOME/.clapp"
   cp -f "$repo"/.clapp/.lib "$HOME"/.clapp/.lib || return 1
+  cp -f "$repo"/.clapp/postbash4.lib "$HOME"/.clapp/postbash4.lib || return 1
+  cp -f "$repo"/.clapp/prebash4.lib "$HOME"/.clapp/prebash4.lib || return 1
   [[ ! -e "$HOME/.clapp/.cfg" ]] && { cp -f "$repo"/.clapp/.cfg "$HOME"/.clapp/.cfg || return 1; }
   cp -f "$repo"/.clapp/help "$HOME"/.clapp/help || return 1
   cp -f "$repo"/.clapp/version "$HOME"/.clapp/version || return 1

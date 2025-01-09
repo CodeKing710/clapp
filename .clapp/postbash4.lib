@@ -1,0 +1,248 @@
+#!/usr/bin/env bash
+
+# Bash 4 lists
+declare -A s_appopts
+declare -A lists # Setup for bash clapp apps
+lists[types]="^(bash|sh|py|python|node|js|javascript)$"
+
+# Bash 4 options getter/setter
+__gsopts() {
+  if [ -z "$1" ]; then
+    for key in "${!s_appopts[@]}"; do
+        echo "$key: ${s_appopts[$key]}"
+    done
+    unset key
+  else
+    for arg in "$@"; do
+      local option="$(echo "$arg" | cut -d '=' -f1)"
+      local value="$(echo "$arg" | cut -d '=' -f2)"
+      verbose "Option: $option"
+      verbose "Value: $value"
+      log file "Option: $option"
+      log file "Value: $value"
+
+      if [[ "$option" == "name" ]]; then
+        s_appname="$value"
+      elif [[ "$option" == "type" ]]; then
+        s_apptype="$value"
+      elif [[ "$option" == "location" ]]; then
+        s_apploc="$value"
+      else
+        s_appopts[$option]="$value"
+      fi
+    done
+  fi
+}
+
+
+# Functionality
+# Node File Generator
+__mknode() {
+  [[ -z "$(command -v npm || command -v node)" ]] || { error "NodeJS Not Installed!"; exit; }
+  __opts # Process general options
+  [[ -n "${s_appopts[venv]}" ]] && __VENV=true
+
+  # Process Node-specific options
+  # web: process string to respective packages
+  # Slot 1: Mongo (M), MySQL (S), MS-SQL (s), PostgreSQL (P), None (N)
+  # Slot 2: Express (E), Node (N)
+  # Slot 3: React (R), Angular (A), EJS (E), Jade (J), HTML (H)
+  local pkginstallstr="" # Dynamically built to ensure project setup is handled by node and not by clapp
+  local viewext=""
+  # Booleans
+  local models=""
+  local views=""
+  local utils=""
+  local express=""
+  [[ -n "${s_appopts[utils]}" ]] && utils=true
+  procstr() {
+    local db="${1:0:1}"
+    local proc="${1:1:1}"
+    local tmpeng="${1:2:1}"
+    verbose "db: $db"
+    verbose "proc: $proc"
+    verbose "tmpeng: $tmpeng"
+    case $db in
+      M )
+        models=true
+        pkginstallstr="${pkginstallstr}mongoose "
+        ;;
+      S | P | s )
+        models=true
+        pkginstallstr="${pkginstallstr}sequelize "
+        ;;
+      * ) ;;
+    esac
+    case $proc in
+      E )
+        pkginstallstr="${pkginstallstr}express cookie-parser dotenv "
+        express=true
+        ;;
+      * ) ;;
+    esac
+    case $tmpeng in
+      R )
+        [ "$proc" = "E" ] && pkginstallstr="${pkginstallstr}react express-react-views " || pkginstallstr="${pkginstallstr}react "
+        viewext=".jsx"
+        views=true
+        ;;
+      A )
+        pkginstallstr="${pkginstallstr}angular "
+        views=true
+        ;;
+      E )
+        pkginstallstr="${pkginstallstr}ejs "
+        viewext=".ejs"
+        views=true
+        ;;
+      J )
+        pkginstallstr="${pkginstallstr}jade "
+        viewext=".jade"
+        views=true
+        ;;
+      H )
+        viewext=".html"
+        views=true
+        ;;
+      * ) ;;
+    esac
+    pkginstallstr=$(echo "$pkginstallstr" | xargs)
+  }
+  [[ -n "${s_appopts[style]}" ]] && procstr "${s_appopts[style]}"
+
+  # Import respective templates
+  source "$js_assets/main.hdf"
+  source "$js_assets/utils.hdf"
+  source "$js_assets/views.hdf"
+  source "$js_assets/models.hdf"
+  source "$js_assets/routes.hdf"
+
+  # Begin setup of node project directory
+  cd "$s_apploc"
+  
+  [[ "$models" == "true" ]] && {
+    [[ ! -d "./models" ]] && mkdir ./models
+    echo "$__MODELMAINDOC" > ./models/index.js
+    echo "$__MODELUSERDOC" > ./models/user.js
+  }
+  [[ "$utils" == "true" ]] && {
+    [[ ! -d "./utils" ]] && mkdir ./utils
+    echo "$__UTILMAINDOC" > ./utils/index.js
+    echo "$__UTILVARDOC" > ./utils/tvar.js
+  }
+  [[ "$views" == "true" ]] && {
+    [[ ! -d "./views" ]] && mkdir ./views
+    [[ "$viewext" == ".ejs" ]] && {
+      echo "$__VIEWSMAINDOC" > ./views/index.ejs
+      echo "$__VIEWSHEADDOC" > ./views/head.ejs
+      echo "$__VIEWSTAILDOC" > ./views/foot.ejs
+      echo "$__VIEWSEJSMAINDOC" > ./views/404.ejs
+    } || [[ "$viewext" == ".html" ]] && {
+      echo "$__VIEWSMAINDOC" > ./views/index.html
+    }
+  }
+  [[ "$express" == "true" ]] && {
+    [[ ! -d "./public" ]] && mkdir ./public
+    [[ ! -d "./public/css" ]] && mkdir ./public/css
+    [[ ! -d "./public/js" ]] && mkdir ./public/js
+    [[ ! -d "./public/assets" ]] && mkdir ./public/assets
+    [[ ! -d "./routes" ]] && mkdir ./routes
+    echo "$__ROUTESMAINDOC" > ./routes/index.js
+    echo "$__ROUTESMAINROUTE" > ./routes/main.js
+    echo -e "#!/bin/env node\n\n$__JSAPPE" > ./index.js
+  } || echo -e "#!/bin/env node\n\n$__JSAPP" > ./index.js
+  npm init -y >>/dev/null
+  [[ ! -z "$pkginstallstr" ]] && { echo "Installing packages..."; npm i $pkginstallstr >/dev/null || return 1; } && echo "Packages installed!"
+
+  # If we got here, we succeeded
+  log "Successfully created Node app '$s_appname' in location $s_apploc!"
+  log "Refer to documentation in clapp (clapp --docs) on further setup!"
+}
+
+# Python File Generator
+__mkpy() {
+  if [[ ! $(command -v python) && ! $(command -v python3) ]]; then error "Python Not Installed!"; exit; fi
+  __opts
+
+  [[ -n "${s_appopts[venv]}" ]] && __VENV=true
+
+  source "$py_assets/main.hdf" # __PYAPP
+  touch "$s_apploc/version"
+  touch "$s_apploc/help"
+  echo -e "$__PYAPP" > "$s_apploc/$s_appname.py"
+  chmod u+x "$s_apploc/$s_appname.py"
+
+  # If we got here, we succeeded
+  log "Successfully created Python app '$s_appname' in location $s_apploc!"
+  log "Refer to documentation in clapp (clapp --docs) on further setup!"
+}
+
+# Bash File Generator
+__mksh() {
+  # Process app options and properties
+  __opts
+  [[ -n "${s_appopts[altargfunc]}" ]] && __ALT=true
+  [[ -n "${s_appopts[commands]}" ]] && __CMD=true
+  [[ -n "${s_appopts[states]}" ]] && { unset __CMD __ALT; __STATE=true; } # Can't have states with original options processing functions
+  [[ -n "${s_appopts[allone]}" ]] && ALLONE=true
+
+  # Pull HDFs (__SHINSTALL, __SHAPP, __SHLIB)
+  source "$sh_assets/install.hdf"
+  source "$sh_assets/main.hdf"
+  source "$sh_assets/lib.hdf"
+  # Generate based on all-in-one
+  if [[ -n "$ALLONE" ]]; then
+    echo -e "#!/bin/bash\n\nversion=\"${s_appname} - v1.0.0\"\nhelp=\"\"\n\n$__SHLIB\n$__SHAPP\nunset version help" > "$s_apploc/${s_appname}"
+    chmod ug+x "$s_apploc/${s_appname}"
+  else
+    mkdir "$s_apploc/.${s_appname}"
+    echo "${s_appname} - v1.0.0" > "$s_apploc/.${s_appname}/version"
+    echo "Usage: ${s_appname} [options] <args>" > "$s_apploc/.${s_appname}/help"
+    echo -e "#!/bin/bash\n\n$__SHLIB" > "$s_apploc/.${s_appname}/.lib"
+    echo -e "#!/bin/bash\n\n$__SHAPP" > "$s_apploc/${s_appname}"
+    chmod ug+x "$s_apploc/.${s_appname}/.lib"
+    chmod ug+x "$s_apploc/${s_appname}"
+  fi
+
+  # Generate install file
+  echo "$__SHINSTALL" > "$s_apploc/install"
+  chmod ug+x "$s_apploc/install"
+
+  # If we got here, we succeeded
+  log "Successfully created Bash app '$s_appname' in location $s_apploc!"
+  log "Refer to documentation in clapp (clapp --docs) on further setup!"
+}
+
+# Parsing
+# Options take precedence over arguments
+# Setting name, type, or location in options will override
+__opts() {
+  # Begin generating folders and files, ask overwrite prompt
+  [[ -d "$s_apploc" ]] && {
+    error "App with that name already exists!"
+    prompt "Would you like to overwrite the existing app? [Y/n]" || exit 1
+  }
+
+  # Set __srced value (used in HDFs)
+  __srced="$([[ -n ${s_appopts[src]} ]] && echo "${s_appname}/src" || echo "${s_appname}")"
+
+  log "Generating $s_appname in location $s_apploc..."
+  verbose "Options:\n$(__gsopts)"
+  [[ ! -e "$s_apploc" ]] && mkdir "$s_apploc"
+
+  # Parse general options
+  for key in "${!s_appopts[@]}"; do
+    case "$key" in
+      # Boolean
+      src )
+        mkdir "$s_apploc/src"
+        s_apploc="$s_apploc/src"
+        ;;
+      repo )
+        cd "$s_apploc" && git init >>/dev/null && echo "# $s_appname" > readme.md
+        log "Initialized app as repo! Don't forget to run \`git commit -a -m \"Creation of $s_appname!\"\`"
+        cd "$__cwd"
+        ;;
+    esac
+  done
+}
