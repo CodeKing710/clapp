@@ -34,7 +34,6 @@ __gsopts() {
   fi
 }
 
-
 # Functionality
 # Node File Generator
 __mknode() {
@@ -213,9 +212,7 @@ __mksh() {
   log "Refer to documentation in clapp (clapp --docs) on further setup!"
 }
 
-# Parsing
-# Options take precedence over arguments
-# Setting name, type, or location in options will override
+# Parse Options function. Setting name, type, or location in options will override
 __opts() {
   # Begin generating folders and files, ask overwrite prompt
   [[ -d "$s_apploc" ]] && {
