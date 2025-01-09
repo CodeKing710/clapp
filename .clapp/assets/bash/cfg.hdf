@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+__CFG="$(cat << CFG
+# Configuration file for the ${s_appname}
+# This will contain preset configuration states
+# Booleans are signified easily by 1 and 0
+# Use \`(( state_name ))\` to get a true/false conditional
+
+autoupdate=1
+CFG
+)"

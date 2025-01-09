@@ -6,9 +6,27 @@ __MAIN=$(cat << APP
 
 # $s_appname's main code
 
-autoupdate="\$(cat \$HOME/.${s_appname}/.cfg | grep 'autoup' | cut -d '=' -f2)"
-repo="\$(find \$HOME -type d -name "$__srced" 2>/dev/null | grep repo)"
+# Load app configuration
+source "\$HOME/.${s_appname}/app.cfg"
+
+# Install the app if the user runs this from the repo
 [[ ! -e "\$HOME"/.${s_appname} ]] && mkdir "\$HOME/.${s_appname}" && "\$repo/install"
+
+# Perform autoupdate process
+repo="\$(find \$HOME -type d -name "$__srced" 2>/dev/null | grep repo)"
+if [[ -e "\$HOME/.${s_appname}/.cfg" ]]; then
+	autoupdate="\$(cat \$HOME/.${s_appname}/.cfg | grep 'autoup' | cut -d '=' -f2)"
+else
+	autoupdate=1 # Default is to always autoupdate, change to 0 to turn off
+fi
+
+if (( \$autoupdate )); then
+	# Check for updates
+	if [[ -n "\$(diff "\$repo"/.${s_appname}/.lib "\$HOME"/.${s_appname}/.lib)" || -n "\$(diff "\$repo"/.${s_appname}/help "\$HOME"/.${s_appname}/help)" || -n "\$(diff "\$repo"/.${s_appname}/version "\$HOME"/.${s_appname}/version)" || -n "\$(diff "\$repo"/${s_appname} "\$HOME"/bin/${s_appname})" ]]; then
+		"\$repo/install"
+	fi
+fi
+
 
 # Check for unit test
 if [[ "\$${s_appname}_TST" == "true" ]]; then
@@ -16,47 +34,27 @@ if [[ "\$${s_appname}_TST" == "true" ]]; then
 	echo -e "[${s_appname}] UNIT TEST MODE! READING FROM REPO!"
 	source "\$repo"/.${s_appname}/.lib
 	prgroot="\$repo/.${s_appname}"
-elif [[ "\$autoupdate" == "true" ]]; then
-	# Check for updates
-	if [[ -n "\$(diff "\$repo"/.${s_appname}/.lib "\$HOME"/.${s_appname}/.lib)" || -n "\$(diff "\$repo"/.${s_appname}/help "\$HOME"/.${s_appname}/help)" || -n "\$(diff "\$repo"/.${s_appname}/version "\$HOME"/.${s_appname}/version)" || -n "\$(diff "\$repo"/${s_appname} "\$HOME"/bin/${s_appname})" ]]; then "\$repo/install"; fi
-	
-	# Load lib
-	source "\$HOME"/.${s_appname}/.lib
 else
+	# Load the library from user's home
 	source "\$HOME"/.${s_appname}/.lib
 fi
 
-
 __${s_appname}() {
-APP
-)
-__END=$(cat << END
-	# Write your app's main flow here (General stub supports arg handling)
+	[[ -z "\$1" ]] && { cat "\$HOME/.${s_appname}/help" | head -1; } || __parseargs "\$@"
+	# Write your app's main flow here
 }
 
 __${s_appname} "\$@"
-#shopt -qu extglob # Shouldn't need this as shopt stays specific to the subshell, uncomment if sourcing to parent
 
 # Cleanup for accidental sourcing
-[[ "\$\$" -eq "\$BASHPID" ]] && unset __${s_appname} __args __cwd autoupdate repo prgroot __loadcfg __cfg error verbose log lists __cmds states
-END
-)
-__MAINCMD=$(cat << CMD
-	if [[ -z "\$1" ]]; then
-		__args
-	else
-		if [[ "\$1" =~ "-" ]]; then
-			# Arg mode
-			__args "\$@"
-		else
-			# Command mode
-			__cmds "\$@"
-		fi
-	fi
-CMD
-)
+[[ "\${BASH_SOURCE[0]}" != "\$0" ]] && {
+	unset __${s_appname} __args __cwd autoupdate repo prgroot __loadcfg __cfg error verbose log lists __cmds states
+	# shopt -u extglob # Uncomment this to reset extglob for accidental sourcing
+}
 
-__MAINARG="  [[ -z \"\$1\" ]] && __args -? || __args \$@"
+exit 0
+APP
+)
 
 __SHAPP="$__MAIN\n$([[ "$__CMD" == "true" || "$__STATE" == "true" ]] && echo "$__MAINCMD" || echo "$__MAINARG")\n$__END"
 

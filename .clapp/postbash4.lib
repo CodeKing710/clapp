@@ -180,36 +180,41 @@ __mkpy() {
 __mksh() {
   # Process app options and properties
   __opts
-  [[ -n "${s_appopts[altargfunc]}" ]] && __ALT=true
-  [[ -n "${s_appopts[commands]}" ]] && __CMD=true
-  [[ -n "${s_appopts[states]}" ]] && { unset __CMD __ALT; __STATE=true; } # Can't have states with original options processing functions
   [[ -n "${s_appopts[allone]}" ]] && ALLONE=true
+  [[ -n "${s_appopts[compat]}" ]] && COMPAT=true
 
-  # Pull HDFs (__SHINSTALL, __SHAPP, __SHLIB)
+  # Pull HDFs (__SHINSTALL, __SHAPP, __SHLIB, __CFG)
   source "$sh_assets/install.hdf"
+  source "$sh_assets/cfg.hdf"
   source "$sh_assets/main.hdf"
   source "$sh_assets/lib.hdf"
+  if [[ -n "$COMPAT" ]]; then
+    # Add a message to all files to indicate compatibility
+    __MSG="# This script should be designed with support for older shells in mind.\n# Things you cannot use to ensure compatibility:\n# - Expansions for such as \${var,,} or \${var^^}\n# - Associative arrays via \`declare -A\`\n#\n# Alternatives must be utilized to ensure compatibility!\n\n"
+  fi
   # Generate based on all-in-one
   if [[ -n "$ALLONE" ]]; then
-    echo -e "#!/bin/bash\n\nversion=\"${s_appname} - v1.0.0\"\nhelp=\"\"\n\n$__SHLIB\n$__SHAPP\nunset version help" > "$s_apploc/${s_appname}"
-    chmod ug+x "$s_apploc/${s_appname}"
+    echo -e "#!/usr/bin/env bash\n\n$([[ -n "$COMPAT" ]] && echo "$__MSG")version=\"${s_appname} - v1.0.0\"\nhelp=\"\"\n\n$__SHLIB\n$__SHAPP\n[[ "\${BASH_SOURCE[0]}" != "\$0" ]] && unset version help" > "$s_apploc/${s_appname}"
+    chmod 755 "$s_apploc/${s_appname}"
   else
     mkdir "$s_apploc/.${s_appname}"
     echo "${s_appname} - v1.0.0" > "$s_apploc/.${s_appname}/version"
-    echo "Usage: ${s_appname} [options] <args>" > "$s_apploc/.${s_appname}/help"
-    echo -e "#!/bin/bash\n\n$__SHLIB" > "$s_apploc/.${s_appname}/.lib"
-    echo -e "#!/bin/bash\n\n$__SHAPP" > "$s_apploc/${s_appname}"
-    chmod ug+x "$s_apploc/.${s_appname}/.lib"
-    chmod ug+x "$s_apploc/${s_appname}"
+    echo "Usage: ${s_appname} [-V] <args>" > "$s_apploc/.${s_appname}/help"
+    echo -e "#!/usr/bin/env bash\n\n$([[ -n "$COMPAT" ]] && echo "$__MSG")$__SHLIB" > "$s_apploc/.${s_appname}/.lib"
+    echo -e "#!/usr/bin/env bash\n\n$([[ -n "$COMPAT" ]] && echo "$__MSG")$__SHAPP" > "$s_apploc/${s_appname}"
+    echo -e "$__CFG" > "$s_apploc/.${s_appname}/app.cfg"
+    chmod 755 "$s_apploc/.${s_appname}/.lib"
+    chmod 755 "$s_apploc/${s_appname}"
   fi
 
   # Generate install file
   echo "$__SHINSTALL" > "$s_apploc/install"
-  chmod ug+x "$s_apploc/install"
+  chmod 755 "$s_apploc/install"
 
   # If we got here, we succeeded
   log "Successfully created Bash app '$s_appname' in location $s_apploc!"
-  log "Refer to documentation in clapp (clapp --docs) on further setup!"
+  log "Don't forget to update the help and version files as you develop the app!"
+  log "Refer to the CLApp documentation (clapp docs) on further setup!"
 }
 
 # Parse Options function. Setting name, type, or location in options will override
