@@ -197,7 +197,7 @@ __mksh() {
     echo -e "#!/usr/bin/env bash\n\n$([[ -n "$COMPAT" ]] && echo "$__MSG")version=\"${s_appname} - v1.0.0\"\nhelp=\"\"\n\n$__SHLIB\n$__SHAPP\n[[ "\${BASH_SOURCE[0]}" != "\$0" ]] && unset version help" > "$s_apploc/${s_appname}"
     chmod 755 "$s_apploc/${s_appname}"
   else
-    mkdir "$s_apploc/.${s_appname}"
+    [[ ! -d "$s_apploc/.${s_appname}" ]] && mkdir -p "$s_apploc/.${s_appname}"
     echo "${s_appname} - v1.0.0" > "$s_apploc/.${s_appname}/version"
     echo "Usage: ${s_appname} [-V] <args>" > "$s_apploc/.${s_appname}/help"
     echo -e "#!/usr/bin/env bash\n\n$([[ -n "$COMPAT" ]] && echo "$__MSG")$__SHLIB" > "$s_apploc/.${s_appname}/.lib"

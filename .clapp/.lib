@@ -65,6 +65,7 @@ __args() {
         shift
         if [[ "$1" == *"="* ]]; then
           __gsopts "$@" # Function will choose the correct one based on Bash version
+          break # With this hopefully being last, this should break out of the arg loop
         else
           error "'-o' must only be followed by options, if you want to pass other arguments, put them before '-o'!"
           exit 1
@@ -187,9 +188,9 @@ __gsloc() {
 
 # Load optimized lib based on current Bash version
 if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
-  log file "Loading Bash 4+ optimized lib..."
+  # log file "Loading Bash 4+ optimized lib..."
   source "$prgroot/postbash4.lib"
 else
-  log file "Loading Pre Bash 4+ optimized lib..."
+  # log file "Loading Pre Bash 4+ optimized lib..."
   source "$prgroot/prebash4.lib"
 fi

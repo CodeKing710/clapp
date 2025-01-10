@@ -35,8 +35,8 @@ __gsopts() {
   fi
 }
 
-
 # Functionality
+# Node File Generator
 __mknode() {
   [[ -z "$(command -v npm || command -v node)" ]] || { error "NodeJS Not Installed!"; exit; }
   __opts # Process general options
@@ -179,6 +179,8 @@ __mknode() {
   log "Successfully created Node app '$s_appname' in location $s_apploc!"
   log "Refer to documentation in clapp (clapp --docs) on further setup!"
 }
+
+# Python File Generator
 __mkpy() {
   if [[ ! $(command -v python) && ! $(command -v python3) ]]; then error "Python Not Installed!"; exit; fi
   __opts
@@ -202,74 +204,68 @@ __mkpy() {
   log "Successfully created Python app '$s_appname' in location $s_apploc!"
   log "Refer to documentation in clapp (clapp --docs) on further setup!"
 }
+
+# Bash File Generator
 __mksh() {
   # Process app options and properties
   __opts
-  if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
-    [[ -n "${s_appopts[altargfunc]}" ]] && __ALT=true
-    [[ -n "${s_appopts[commands]}" ]] && __CMD=true
-    [[ -n "${s_appopts[states]}" ]] && { unset __CMD __ALT; __STATE=true; } # Can't have states with original options processing functions
-    [[ -n "${s_appopts[allone]}" ]] && ALLONE=true
-  else
-    for value in "${s_appopts_k[@]}"; do
-      [[ "$value" == "altargfunc" ]] && __ALT=true
-      [[ "$value" == "commands" ]] && __CMD=true
-      [[ "$value" == "states" ]] && { unset __CMD __ALT; __STATE=true; } # Can't have states with original options processing functions
-      [[ "$value" == "allone" ]] && ALLONE=true
-    done
-    unset value
-  fi
+  for value in "${s_appopts_k[@]}"; do
+    [[ "$value" == "allone" ]] && ALLONE=true
+    [[ "$value" == "compat" ]] && COMPAT=true
+  done
 
-  # Pull HDFs (__SHINSTALL, __SHAPP, __SHLIB)
+  # Pull HDFs (__SHINSTALL, __SHAPP, __SHLIB, __CFG)
   source "$sh_assets/install.hdf"
+  source "$sh_assets/cfg.hdf"
   source "$sh_assets/main.hdf"
   source "$sh_assets/lib.hdf"
+  if [[ -n "$COMPAT" ]]; then
+    # Add a message to all files to indicate compatibility
+    __MSG="# This script should be designed with support for older shells in mind.\n# Things you cannot use to ensure compatibility:\n# - Expansions for such as \${var,,} or \${var^^}\n# - Associative arrays via \`declare -A\`\n#\n# Alternatives must be utilized to ensure compatibility!\n\n"
+  fi
   # Generate based on all-in-one
   if [[ -n "$ALLONE" ]]; then
-    echo -e "#!/bin/bash\n\nversion=\"${s_appname} - v1.0.0\"\nhelp=\"\"\n\n$__SHLIB\n$__SHAPP\nunset version help" > "$s_apploc/${s_appname}"
-    chmod ug+x "$s_apploc/${s_appname}"
+    echo -e "#!/usr/bin/env bash\n\n$([[ -n "$COMPAT" ]] && echo "$__MSG")version=\"${s_appname} - v1.0.0\"\nhelp=\"\"\n\n$__SHLIB\n$__SHAPP\n[[ "\${BASH_SOURCE[0]}" != "\$0" ]] && unset version help" > "$s_apploc/${s_appname}"
+    chmod 755 "$s_apploc/${s_appname}"
   else
-    mkdir "$s_apploc/.${s_appname}"
+    [[ ! -d "$s_apploc/.${s_appname}" ]] && mkdir -p "$s_apploc/.${s_appname}"
     echo "${s_appname} - v1.0.0" > "$s_apploc/.${s_appname}/version"
-    echo "Usage: ${s_appname} [options] <args>" > "$s_apploc/.${s_appname}/help"
-    echo -e "#!/bin/bash\n\n$__SHLIB" > "$s_apploc/.${s_appname}/.lib"
-    echo -e "#!/bin/bash\n\n$__SHAPP" > "$s_apploc/${s_appname}"
-    chmod ug+x "$s_apploc/.${s_appname}/.lib"
-    chmod ug+x "$s_apploc/${s_appname}"
+    echo "Usage: ${s_appname} [-V] <args>" > "$s_apploc/.${s_appname}/help"
+    printf "#!/usr/bin/env bash\n\n$([[ -n "$COMPAT" ]] && echo "$__MSG")$__SHLIB\n" > "$s_apploc/.${s_appname}/.lib"
+    printf "#!/usr/bin/env bash\n\n$([[ -n "$COMPAT" ]] && echo "$__MSG")$__SHAPP\n" > "$s_apploc/${s_appname}"
+    printf "$__CFG\n" > "$s_apploc/.${s_appname}/app.cfg"
+    chmod 755 "$s_apploc/.${s_appname}/.lib"
+    chmod 755 "$s_apploc/${s_appname}"
   fi
 
   # Generate install file
   echo "$__SHINSTALL" > "$s_apploc/install"
-  chmod ug+x "$s_apploc/install"
+  chmod 755 "$s_apploc/install"
 
   # If we got here, we succeeded
   log "Successfully created Bash app '$s_appname' in location $s_apploc!"
-  log "Refer to documentation in clapp (clapp --docs) on further setup!"
+  log "Don't forget to update the help and version files as you develop the app!"
+  log "Refer to the CLApp documentation (clapp docs) on further setup!"
 }
 
-# Parsing
-# Options take precedence over arguments
-# Setting name, type, or location in options will override
+# Parse Options function. Setting name, type, or location in options will override
 __opts() {
   # Begin generating folders and files, ask overwrite prompt
   [[ -d "$s_apploc" ]] && {
     error "App with that name already exists!"
     prompt "Would you like to overwrite the existing app? [Y/n]" || exit 1
   }
-  if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
-    __srced="$([[ -n ${s_appopts[src]} ]] && echo "${s_appname}/src" || echo "${s_appname}")"
-  else
-    for key in "${!s_appopts_k[@]}"; do
-      [[ "${s_appopts_k[$key]}" == "src" ]] && __srced="${s_appname}/src" || __srced="${s_appname}"
-    done
-  fi
+
+  for key in "${!s_appopts_k[@]}"; do
+    [[ "${s_appopts_k[$key]}" == "src" ]] && __srced="${s_appname}/src" || __srced="${s_appname}"
+  done
 
   log "Generating $s_appname in location $s_apploc..."
   verbose "Options:\n$(__gsopts)"
   [[ ! -e "$s_apploc" ]] && mkdir "$s_apploc"
 
   # Parse general options
-  for key in "$([[ "${BASH_VERSINFO[0]}" -ge 4 ]] && echo "${!s_appopts[@]}" || echo "${s_appopts_k[@]}")"; do
+  for key in "${s_appopts_k[@]}"; do
     case "$key" in
       # Boolean
       src )

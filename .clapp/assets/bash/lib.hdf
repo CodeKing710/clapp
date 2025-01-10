@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 # SOURCE THIS FILE FOR HEREDOC INTERPOLATION
 
-# Bash 4+ Library Implementation
+# Bash Library Implementation
+
+grep_cmd_msg='error "Did you mean to use \\"\$(echo "\$cmds" | sed -e \\"s/\\^\\|[\\(]\\|[\\)]\\|\\$//g\\" -e \\"s/[\\|]/\\n/g\\" | grep "\$1")\\"?"'
+paren=')'
+single_quote="'"
 __SHLIB=$(cat << LIB
 # $s_appname's Functions and Variables
 
@@ -67,34 +71,34 @@ __parseargs() {
 
 		case "\$arg" in
 			# States
-			-V | --verbose | verbose )
+			-V | --verbose | verbose $paren
 				VERBOSE=1
 				;;
 
 			# Singletons
-			-C | --config | config )
+			-C | --config | config $paren
 				shift
 				[[ ! -z "\$1" ]] && __cfg "\$@" || { error "Must supply rule or 'list'!"; exit 1; }
 				exit 0;;
-			--reset-cfg | reset-config )
+			--reset-cfg | reset-config $paren
 				log "Resetting ${s_appname} to default configuration..."
-				cp -rf \$(find "\$HOME" -type d -name ${s_appname} 2>/dev/null | head -1)/.${s_appname} "\$HOME/" && echo "${s_appname}'s config has been reset!" || error "Failed to reset defaults!"
+				cp -rf \$(find "\$HOME" -type d -name ${s_appname} 2>/dev/null | head -1)/.${s_appname} "\$HOME/" && echo "${s_appname}${single_quote}s config has been reset!" || error "Failed to reset defaults!"
 				exit 0;;
-			-\\? | -h | --help | help )
+			-\\? | -h | --help | help $paren
 				cat "\$prgroot/help"
 				exit 0;;
-			-v | --version | version )
+			-v | --version | version $paren
 				cat "\$prgroot/version"
 				exit 0;;
 
 			# Catch-all
-			* )
+			* $paren
 				if [[ "\$arg" =~ ^- ]]; then
 					cat "\$prgroot/help" | head -1
 					error "\\"\$1\\" is not an argument!"
 				else
 					error "\\"\$1\\" is not a valid command!"
-					error "Did you mean to use '\$(echo "\$cmds" | sed -e 's/\\^\\|[\\(]\\|[\\)]\\|\\\$//g' -e 's/[\\|]/\\\n/g' | grep "\$1")'?"
+					$grep_cmd_msg
 				fi
 				exit 1;;
 		esac

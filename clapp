@@ -19,17 +19,17 @@ repo="$(dirname $(find "$HOME" -type d -name .clapp 2>/dev/null | grep repo))"
 
 if [[ "$autoupdate" == "true" ]]; then
   # Check for updates
-  if [[ -n "$(diff "$repo"/.clapp/.lib "$HOME"/.clapp/.lib)" \
-  || -n "$(diff "$repo"/.clapp/postbash4.lib "$HOME"/.clapp/postbash4.lib)" \
-  || -n "$(diff "$repo"/.clapp/prebash4.lib "$HOME"/.clapp/prebash4.lib)" \
-  || -n "$(diff "$repo"/.clapp/version "$HOME"/.clapp/version)" \
-  || -n "$(diff "$repo"/.clapp/help "$HOME"/.clapp/help)" \
-  || -n "$(diff "$repo"/.clapp/clapp-comp "$HOME"/.d/clapp-comp)" \
-  || -n "$(diff "$repo"/.clapp/assets/bash "$HOME"/.clapp/assets/bash)" \
-  || -n "$(diff "$repo"/.clapp/assets/node "$HOME"/.clapp/assets/node)" \
-  || -n "$(diff "$repo"/.clapp/assets/python "$HOME"/.clapp/assets/python)" \
-  || -n "$(diff "$repo"/.clapp/docs "$HOME"/.clapp/docs)" \
-  || -n "$(diff "$repo"/clapp "$HOME"/bin/clapp)" ]]; then "$repo/install"
+  if [[ -n "$(diff "$repo/.clapp/.lib" "$HOME/.clapp/.lib")" \
+  || -n "$(diff "$repo/.clapp/postbash4.lib" "$HOME/.clapp/postbash4.lib")" \
+  || -n "$(diff "$repo/.clapp/prebash4.lib" "$HOME/.clapp/prebash4.lib")" \
+  || -n "$(diff "$repo/.clapp/version" "$HOME/.clapp/version")" \
+  || -n "$(diff "$repo/.clapp/help" "$HOME/.clapp/help")" \
+  || -n "$(diff "$repo/.clapp/clapp-comp" "$HOME/.d/clapp-comp")" \
+  || -n "$(diff "$repo/.clapp/assets/bash" "$HOME/.clapp/assets/bash")" \
+  || -n "$(diff "$repo/.clapp/assets/node" "$HOME/.clapp/assets/node")" \
+  || -n "$(diff "$repo/.clapp/assets/python" "$HOME/.clapp/assets/python")" \
+  || -n "$(diff "$repo/.clapp/docs" "$HOME/.clapp/docs")" \
+  || -n "$(diff "$repo/clapp" "$HOME/bin/clapp")" ]]; then "$repo/install"
   fi
 fi
 
