@@ -62,12 +62,12 @@ clapp() {
   # Parse states into respective apps
   case "${s_apptype}" in
     js | node | javascript )
-      echo "Type disabled for now"
-      # __mknode # No args required as the function relies on the states
+      # echo "Type disabled for now"
+      __mknode # No args required as the function relies on the states
       ;;
     py | python )
-      echo "Type disabled for now"
-      # __mkpy
+      # echo "Type disabled for now"
+      __mkpy
       ;;
     sh | bash )
       __mksh

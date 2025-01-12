@@ -4,6 +4,12 @@ __PYAPP="$(cat << APPMAIN
 $__VENV
 
 # $s_appname - Does things and stuff
+
+def main():
+  print("Build in Progress")
+  
+if __name__ == "__main__":
+  main()
 APPMAIN
 )"
 

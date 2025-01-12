@@ -37,7 +37,7 @@ __gsopts() {
 # Functionality
 # Node File Generator
 __mknode() {
-  [[ -z "$(command -v npm || command -v node)" ]] || { error "NodeJS Not Installed!"; exit; }
+  [[ -z "$(command -v npm)" || -z "$(command -v node)" ]] && { error "NodeJS Not Installed!"; exit 1; }
   __opts # Process general options
   if [[ -n "${s_appopts[venv]}" ]]; then
       if [[ -n "$(command -v vem)" && ! "${s_appopts[venv]}" =~ "/" ]]; then
@@ -183,8 +183,12 @@ __mkpy() {
       __VENV="#!$(vem --python --path "${s_appopts[venv]}")/python"
     elif [[ "${s_appopts[venv]}" =~ "/" ]]; then
       __VENV="#!${s_appopts[venv]}/python"
+    fi
+  else
+    if [[ -n "$(command -v python3)" ]]; then
+      __VENV="#!/usr/bin/env python3"
     else
-      __VENV="#!/bin/env python"
+      __VENV="#!/usr/bin/env python"
     fi
   fi
 
