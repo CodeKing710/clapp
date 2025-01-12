@@ -39,7 +39,15 @@ __gsopts() {
 __mknode() {
   [[ -z "$(command -v npm || command -v node)" ]] || { error "NodeJS Not Installed!"; exit; }
   __opts # Process general options
-  [[ -n "${s_appopts[venv]}" ]] && __VENV=true
+  if [[ -n "${s_appopts[venv]}" ]]; then
+      if [[ -n "$(command -v vem)" && ! "${s_appopts[venv]}" =~ "/" ]]; then
+        __VENV="const venv=\"$(vem --node --path "${s_appopts[venv]}")/node_modules/\";"
+      elif [[ "${s_appopts[venv]}" =~ "/" ]]; then
+        __VENV="const venv=\"${s_appopts[venv]}/node_modules/\";"
+      else
+        __VENV="const venv=\"\""
+      break
+    fi
 
   # Process Node-specific options
   # web: process string to respective packages
@@ -49,11 +57,11 @@ __mknode() {
   local pkginstallstr="" # Dynamically built to ensure project setup is handled by node and not by clapp
   local viewext=""
   # Booleans
-  local models=""
-  local views=""
-  local utils=""
-  local express=""
-  [[ -n "${s_appopts[utils]}" ]] && utils=true
+  local models=0
+  local views=0
+  local utils=0
+  local express=0
+  [[ -n "${s_appopts[utils]}" ]] && utils=1
   procstr() {
     local db="${1:0:1}"
     local proc="${1:1:1}"
@@ -63,11 +71,11 @@ __mknode() {
     verbose "tmpeng: $tmpeng"
     case $db in
       M )
-        models=true
+        models=1
         pkginstallstr="${pkginstallstr}mongoose "
         ;;
       S | P | s )
-        models=true
+        models=1
         pkginstallstr="${pkginstallstr}sequelize "
         ;;
       * ) ;;
@@ -75,7 +83,7 @@ __mknode() {
     case $proc in
       E )
         pkginstallstr="${pkginstallstr}express cookie-parser dotenv "
-        express=true
+        express=1
         ;;
       * ) ;;
     esac
@@ -83,25 +91,25 @@ __mknode() {
       R )
         [ "$proc" = "E" ] && pkginstallstr="${pkginstallstr}react express-react-views " || pkginstallstr="${pkginstallstr}react "
         viewext=".jsx"
-        views=true
+        views=1
         ;;
       A )
         pkginstallstr="${pkginstallstr}angular "
-        views=true
+        views=1
         ;;
       E )
         pkginstallstr="${pkginstallstr}ejs "
         viewext=".ejs"
-        views=true
+        views=1
         ;;
       J )
         pkginstallstr="${pkginstallstr}jade "
         viewext=".jade"
-        views=true
+        views=1
         ;;
       H )
         viewext=".html"
-        views=true
+        views=1
         ;;
       * ) ;;
     esac
@@ -119,17 +127,17 @@ __mknode() {
   # Begin setup of node project directory
   cd "$s_apploc"
   
-  [[ "$models" == "true" ]] && {
+  (( models )) && {
     [[ ! -d "./models" ]] && mkdir ./models
     echo "$__MODELMAINDOC" > ./models/index.js
     echo "$__MODELUSERDOC" > ./models/user.js
   }
-  [[ "$utils" == "true" ]] && {
+  (( utils )) && {
     [[ ! -d "./utils" ]] && mkdir ./utils
     echo "$__UTILMAINDOC" > ./utils/index.js
     echo "$__UTILVARDOC" > ./utils/tvar.js
   }
-  [[ "$views" == "true" ]] && {
+  (( views )) && {
     [[ ! -d "./views" ]] && mkdir ./views
     [[ "$viewext" == ".ejs" ]] && {
       echo "$__VIEWSMAINDOC" > ./views/index.ejs
@@ -140,7 +148,7 @@ __mknode() {
       echo "$__VIEWSMAINDOC" > ./views/index.html
     }
   }
-  [[ "$express" == "true" ]] && {
+  (( express )) && {
     [[ ! -d "./public" ]] && mkdir ./public
     [[ ! -d "./public/css" ]] && mkdir ./public/css
     [[ ! -d "./public/js" ]] && mkdir ./public/js
@@ -151,7 +159,7 @@ __mknode() {
     echo -e "#!/bin/env node\n\n$__JSAPPE" > ./index.js
   } || echo -e "#!/bin/env node\n\n$__JSAPP" > ./index.js
   npm init -y >>/dev/null
-  [[ ! -z "$pkginstallstr" ]] && { echo "Installing packages..."; npm i $pkginstallstr >/dev/null || return 1; } && echo "Packages installed!"
+  [[ -n "$pkginstallstr" ]] && { echo "Installing packages..."; npm i $pkginstallstr >/dev/null || return 1; } && echo "Packages installed!"
 
   # If we got here, we succeeded
   log "Successfully created Node app '$s_appname' in location $s_apploc!"
@@ -160,10 +168,18 @@ __mknode() {
 
 # Python File Generator
 __mkpy() {
-  if [[ ! $(command -v python) && ! $(command -v python3) ]]; then error "Python Not Installed!"; exit; fi
+  if [[ -z "$(command -v python)" && -z "$(command -v python3)" ]]; then error "Python Not Installed!"; exit 1; fi
   __opts
 
-  [[ -n "${s_appopts[venv]}" ]] && __VENV=true
+  if [[ -n "${s_appopts[venv]}" ]]; then
+    if [[ -n "$(command -v vem)" && ! "${s_appopts[venv]}" =~ "/" ]]; then
+      __VENV="#!$(vem --python --path "${s_appopts[venv]}")/python"
+    elif [[ "${s_appopts[venv]}" =~ "/" ]]; then
+      __VENV="#!${s_appopts[venv]}/python"
+    else
+      __VENV="#!/bin/env python"
+    fi
+  fi
 
   source "$py_assets/main.hdf" # __PYAPP
   touch "$s_apploc/version"

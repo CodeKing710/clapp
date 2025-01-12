@@ -40,14 +40,19 @@ __gsopts() {
 __mknode() {
   [[ -z "$(command -v npm || command -v node)" ]] || { error "NodeJS Not Installed!"; exit; }
   __opts # Process general options
-  if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
-    [[ -n "${s_appopts[venv]}" ]] && __VENV=true
-  else
-    for value in "${s_appopts_k[@]}"; do
-      [[ "$value" == "venv" ]] && { __VENV=true; break; }
-    done
-    unset value
-  fi
+
+  for index in "${s_appopts_k[@]}"; do
+    if [[ "${s_appopts_k[$index]}" == "venv" ]]; then
+      if [[ -n "$(command -v vem)" && ! "${s_appopts_v[$index]}" =~ "/" ]]; then
+        __VENV="const venv=\"$(vem --node --path "${s_appopts_v[$index]}")/node_modules/\";"
+      elif [[ "${s_appopts_v[$index]}" =~ "/" ]]; then
+        __VENV="const venv=\"${s_appopts_v[$index]}/node_modules/\";"
+      else
+        __VENV="const venv=\"\""
+      break
+    fi
+  done
+  unset index
 
   # Process Node-specific options
   # web: process string to respective packages
@@ -57,18 +62,16 @@ __mknode() {
   local pkginstallstr="" # Dynamically built to ensure project setup is handled by node and not by clapp
   local viewext=""
   # Booleans
-  local models=""
-  local views=""
-  local utils=""
-  local express=""
-  if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
-    [[ -n "${s_appopts[utils]}" ]] && utils=true
-  else
-    for value in "${s_appopts_k[@]}"; do
-      [[ "$value" == "utils" ]] && { utils=true; break; }
-    done
-    unset value
-  fi
+  local models=1
+  local views=1
+  local utils=1
+  local express=1
+
+  for value in "${s_appopts_k[@]}"; do
+    [[ "$value" == "utils" ]] && { utils=1; break; }
+  done
+  unset value
+
   procstr() {
     local db="${1:0:1}"
     local proc="${1:1:1}"
@@ -78,11 +81,11 @@ __mknode() {
     verbose "tmpeng: $tmpeng"
     case $db in
       M )
-        models=true
+        models=1
         pkginstallstr="${pkginstallstr}mongoose "
         ;;
       S | P | s )
-        models=true
+        models=1
         pkginstallstr="${pkginstallstr}sequelize "
         ;;
       * ) ;;
@@ -90,7 +93,7 @@ __mknode() {
     case $proc in
       E )
         pkginstallstr="${pkginstallstr}express cookie-parser dotenv "
-        express=true
+        express=1
         ;;
       * ) ;;
     esac
@@ -98,38 +101,35 @@ __mknode() {
       R )
         [ "$proc" = "E" ] && pkginstallstr="${pkginstallstr}react express-react-views " || pkginstallstr="${pkginstallstr}react "
         viewext=".jsx"
-        views=true
+        views=1
         ;;
       A )
         pkginstallstr="${pkginstallstr}angular "
-        views=true
+        views=1
         ;;
       E )
         pkginstallstr="${pkginstallstr}ejs "
         viewext=".ejs"
-        views=true
+        views=1
         ;;
       J )
         pkginstallstr="${pkginstallstr}jade "
         viewext=".jade"
-        views=true
+        views=1
         ;;
       H )
         viewext=".html"
-        views=true
+        views=1
         ;;
       * ) ;;
     esac
     pkginstallstr=$(echo "$pkginstallstr" | xargs)
   }
-  if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
-    [[ -n "${s_appopts[style]}" ]] && procstr "${s_appopts[style]}"
-  else
-    for key in "${!s_appopts_k[@]}"; do
-      [[ "${s_appopts_k[$key]}" == "style" ]] && { procstr "${s_appopts_v[$key]}"; break; }
-    done
-    unset key
-  fi
+
+  for key in "${!s_appopts_k[@]}"; do
+    [[ "${s_appopts_k[$key]}" == "style" ]] && { procstr "${s_appopts_v[$key]}"; break; }
+  done
+  unset key
 
   # Import respective templates
   source "$js_assets/main.hdf"
@@ -141,17 +141,17 @@ __mknode() {
   # Begin setup of node project directory
   cd "$s_apploc"
   
-  [[ "$models" == "true" ]] && {
+  (( models )) && {
     [[ ! -d "./models" ]] && mkdir ./models
     echo "$__MODELMAINDOC" > ./models/index.js
     echo "$__MODELUSERDOC" > ./models/user.js
   }
-  [[ "$utils" == "true" ]] && {
+  (( utils )) && {
     [[ ! -d "./utils" ]] && mkdir ./utils
     echo "$__UTILMAINDOC" > ./utils/index.js
     echo "$__UTILVARDOC" > ./utils/tvar.js
   }
-  [[ "$views" == "true" ]] && {
+  (( views )) && {
     [[ ! -d "./views" ]] && mkdir ./views
     [[ "$viewext" == ".ejs" ]] && {
       echo "$__VIEWSMAINDOC" > ./views/index.ejs
@@ -162,7 +162,7 @@ __mknode() {
       echo "$__VIEWSMAINDOC" > ./views/index.html
     }
   }
-  [[ "$express" == "true" ]] && {
+  (( express )) && {
     [[ ! -d "./public" ]] && mkdir ./public
     [[ ! -d "./public/css" ]] && mkdir ./public/css
     [[ ! -d "./public/js" ]] && mkdir ./public/js
@@ -173,7 +173,7 @@ __mknode() {
     echo -e "#!/bin/env node\n\n$__JSAPPE" > ./index.js
   } || echo -e "#!/bin/env node\n\n$__JSAPP" > ./index.js
   npm init -y >>/dev/null
-  [[ ! -z "$pkginstallstr" ]] && { echo "Installing packages..."; npm i $pkginstallstr >/dev/null || return 1; } && echo "Packages installed!"
+  [[ -n "$pkginstallstr" ]] && { echo "Installing packages..."; npm i $pkginstallstr >/dev/null || return 1; } && echo "Packages installed!"
 
   # If we got here, we succeeded
   log "Successfully created Node app '$s_appname' in location $s_apploc!"
@@ -185,14 +185,19 @@ __mkpy() {
   if [[ ! $(command -v python) && ! $(command -v python3) ]]; then error "Python Not Installed!"; exit; fi
   __opts
 
-  if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
-    [[ -n "${s_appopts[venv]}" ]] && __VENV=true
-  else
-    for value in "${s_appopts_k[@]}"; do
-      [[ "$value" == "venv" ]] && { __VENV=true; break; }
-    done
-    unset value
-  fi
+  for index in "${!s_appopts_k[@]}"; do
+    if [[ "${s_appopts_k[$index]}" == "venv" ]]; then
+      if [[ -n "$(command -v vem)" && ! "${s_appopts_v[$index]}" =~ "/" ]]; then
+        __VENV="#!$(vem --python --path "${s_appopts_v[$index]}")/python"
+      elif [[ "${s_appopts_v[$index]}" =~ "/" ]]; then
+        __VENV="#!${s_appopts_v[$index]}/python"
+      else
+        __VENV="#!/bin/env python"
+      fi
+      break
+    fi
+  done
+  unset index
 
   source "$py_assets/main.hdf" # __PYAPP
   touch "$s_apploc/version"
