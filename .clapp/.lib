@@ -95,7 +95,7 @@ __args() {
         exit 0;;
       --update | update )
         # Clapp does this by default, this ensures clapp doesn't continue execution
-        [[ $(diff "$HOME/bin/clapp" "$(find $HOME -type d -name clapp)/clapp") ]] || log "CLApp up to date!"
+        [[ -n "$(diff "$HOME/bin/clapp" "$repo/clapp")" ]] || log "CLApp up to date!"
         exit 0;;
       --docs | docs )
         shift

@@ -141,28 +141,28 @@ __mknode() {
   # Begin setup of node project directory
   cd "$s_apploc"
   
-  (( models )) && {
+  if (( models )); then
     [[ ! -d "./models" ]] && mkdir ./models
     echo "$__MODELMAINDOC" > ./models/index.js
     echo "$__MODELUSERDOC" > ./models/user.js
-  }
-  (( utils )) && {
+  fi
+  if (( utils )); then
     [[ ! -d "./utils" ]] && mkdir ./utils
     echo "$__UTILMAINDOC" > ./utils/index.js
     echo "$__UTILVARDOC" > ./utils/tvar.js
-  }
-  (( views )) && {
+  fi
+  if (( views )); then
     [[ ! -d "./views" ]] && mkdir ./views
-    [[ "$viewext" == ".ejs" ]] && {
+    if [[ "$viewext" == ".ejs" ]]; then
       echo "$__VIEWSMAINDOC" > ./views/index.ejs
       echo "$__VIEWSHEADDOC" > ./views/head.ejs
       echo "$__VIEWSTAILDOC" > ./views/foot.ejs
       echo "$__VIEWSEJSMAINDOC" > ./views/404.ejs
-    } || [[ "$viewext" == ".html" ]] && {
+    elif [[ "$viewext" == ".html" ]]; then
       echo "$__VIEWSMAINDOC" > ./views/index.html
-    }
-  }
-  (( express )) && {
+    fi
+  fi
+  if (( express )); then
     [[ ! -d "./public" ]] && mkdir ./public
     [[ ! -d "./public/css" ]] && mkdir ./public/css
     [[ ! -d "./public/js" ]] && mkdir ./public/js
@@ -171,9 +171,16 @@ __mknode() {
     echo "$__ROUTESMAINDOC" > ./routes/index.js
     echo "$__ROUTESMAINROUTE" > ./routes/main.js
     echo -e "#!/bin/env node\n\n$__JSAPPE" > ./index.js
-  } || echo -e "#!/bin/env node\n\n$__JSAPP" > ./index.js
+  else
+    echo -e "#!/bin/env node\n\n$__JSAPP" > ./index.js
+  fi
+
   npm init -y >>/dev/null
-  [[ -n "$pkginstallstr" ]] && { echo "Installing packages..."; npm i $pkginstallstr >/dev/null || return 1; } && echo "Packages installed!"
+
+  if [[ -n "$pkginstallstr" ]]; then
+    echo "Installing packages..."
+    npm i $pkginstallstr >/dev/null && echo "Packages installed!" || return 1
+  fi
 
   # If we got here, we succeeded
   log "Successfully created Node app '$s_appname' in location $s_apploc!"
