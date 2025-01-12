@@ -5,7 +5,7 @@ __SHINSTALL=$(cat << INST
 
 # $s_appname's installer
 install() {
-	if [[ -e "\$(cat "\$HOME/.${s_appname}/app.cfg" | grep 'repo_path' | cut -d= -f2)" ]]; then
+	if [[ -n "\$(cat "\$HOME/.${s_appname}/app.cfg" 2>/dev/null | grep 'repo_path' | cut -d= -f2)" ]]; then
 		local repo="\$(cat "\$HOME/.${s_appname}/app.cfg" | grep 'repo_path' | cut -d= -f2)"
 	else
 		local write_repo_to_cfg=1

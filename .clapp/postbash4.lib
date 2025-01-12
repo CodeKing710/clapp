@@ -183,8 +183,9 @@ __mksh() {
   [[ -n "${s_appopts[allone]}" ]] && ALLONE=true
   [[ -n "${s_appopts[compat]}" ]] && COMPAT=true
 
-  # Pull HDFs (__SHINSTALL, __SHAPP, __SHLIB, __CFG)
+  # Pull HDFs (__SHINSTALL, __SHUNINSTALL, __SHAPP, __SHLIB, __CFG)
   source "$sh_assets/install.hdf"
+  source "$sh_assets/uninstall.hdf"
   source "$sh_assets/cfg.hdf"
   source "$sh_assets/main.hdf"
   source "$sh_assets/lib.hdf"
@@ -210,6 +211,10 @@ __mksh() {
   # Generate install file
   echo "$__SHINSTALL" > "$s_apploc/install"
   chmod 755 "$s_apploc/install"
+
+  # Generate uninstall file
+  echo "$__SHUNINSTALL" > "$s_apploc/uninstall"
+  chmod 755 "$s_apploc/uninstall"
 
   # If we got here, we succeeded
   log "Successfully created Bash app '$s_appname' in location $s_apploc!"
