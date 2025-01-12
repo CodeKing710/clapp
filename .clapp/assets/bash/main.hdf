@@ -54,7 +54,7 @@ __${s_appname} "\$@"
 # Cleanup for accidental sourcing
 [[ "\${BASH_SOURCE[0]}" != "\$0" ]] && {
 	unset __${s_appname} __parseargs __cwd autoupdate repo prgroot __loadcfg __cfg error verbose log lists __cmds states
-	# shopt -u extglob # Uncomment this to reset extglob for accidental sourcing
+	# shopt -qu extglob # Uncomment this to reset extglob for accidental sourcing
 }
 
 exit 0
