@@ -1,0 +1,16 @@
+#/usr/bin/env bash
+
+# Grab the repo path just in case
+repo="$(cat "$HOME/.clapp/app.cfg" | grep repo_path | cut -d= -f2)"
+
+# Remove ${s_appname} from the system
+rm -rf "$HOME/.clapp"
+rm "$HOME/bin/clapp"
+
+# Ask if the user would like to remove the repo
+read -rep "Would you like to remove the repo as well? [Y/n] " yn
+yn="$(echo "$yn" | tr '[:upper:]' '[:lower:]')"
+[[ "$yn" == 'y' ]] && rm -rf "$repo"
+
+# Let the user know that all of ${s_appname}'s files have been removed
+echo "All of clapp's files have been removed."
