@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # SOURCE THIS FILE FOR HEREDOC INTERPOLATION
-__MAIN=$(cat << APP
+__SHAPP=$(cat << APP
 # Uncomment if you want to use extended glob patterns
 # shopt -qs extglob
 
@@ -10,19 +10,24 @@ __MAIN=$(cat << APP
 source "\$HOME/.${s_appname}/app.cfg"
 
 # Install the app if the user runs this from the repo
-[[ ! -e "\$HOME"/.${s_appname} ]] && mkdir "\$HOME/.${s_appname}" && "\$repo/install"
+[[ ! -e "\$HOME/.${s_appname}" ]] && { mkdir "\$HOME/.${s_appname}"; "\$repo/install"; }
 
 # Perform autoupdate process
-repo="\$(find \$HOME -type d -name "$__srced" 2>/dev/null | grep repo)"
 if [[ -e "\$HOME/.${s_appname}/.cfg" ]]; then
-	autoupdate="\$(cat \$HOME/.${s_appname}/.cfg | grep 'autoup' | cut -d '=' -f2)"
+	autoupdate="\$(cat "\$HOME/.${s_appname}/.cfg" | grep 'autoup' | cut -d '=' -f2)"
 else
 	autoupdate=1 # Default is to always autoupdate, change to 0 to turn off
 fi
 
-if (( \$autoupdate )); then
+if (( autoupdate )); then
+	if [[ -e "\$HOME/repos/${s_appname}" ]]; then
+		repo="\$HOME/repos/${s_appname}"
+	else
+		repo="\$(find "\$HOME" -type d -name "$__srced" 2>/dev/null)"
+	fi
+
 	# Check for updates
-	if [[ -n "\$(diff "\$repo"/.${s_appname}/.lib "\$HOME"/.${s_appname}/.lib)" || -n "\$(diff "\$repo"/.${s_appname}/help "\$HOME"/.${s_appname}/help)" || -n "\$(diff "\$repo"/.${s_appname}/version "\$HOME"/.${s_appname}/version)" || -n "\$(diff "\$repo"/${s_appname} "\$HOME"/bin/${s_appname})" ]]; then
+	if [[ -n "\$(diff "\$repo/.${s_appname}/.lib" "\$HOME/.${s_appname}/.lib")" || -n "\$(diff "\$repo/.${s_appname}/help" "\$HOME/.${s_appname}/help")" || -n "\$(diff "\$repo/.${s_appname}/version" "\$HOME/.${s_appname}/version")" || -n "\$(diff "\$repo/${s_appname}" "\$HOME/bin/${s_appname}")" ]]; then
 		"\$repo/install"
 	fi
 fi
@@ -32,11 +37,11 @@ fi
 if [[ "\$${s_appname}_TST" == "true" ]]; then
 	# Load the lib from the repo and set prgroot to repo
 	echo -e "[${s_appname}] UNIT TEST MODE! READING FROM REPO!"
-	source "\$repo"/.${s_appname}/.lib
+	source "\$repo/.${s_appname}/.lib"
 	prgroot="\$repo/.${s_appname}"
 else
 	# Load the library from user's home
-	source "\$HOME"/.${s_appname}/.lib
+	source "\$HOME/.${s_appname}/.lib"
 fi
 
 __${s_appname}() {
@@ -48,14 +53,12 @@ __${s_appname} "\$@"
 
 # Cleanup for accidental sourcing
 [[ "\${BASH_SOURCE[0]}" != "\$0" ]] && {
-	unset __${s_appname} __args __cwd autoupdate repo prgroot __loadcfg __cfg error verbose log lists __cmds states
+	unset __${s_appname} __parseargs __cwd autoupdate repo prgroot __loadcfg __cfg error verbose log lists __cmds states
 	# shopt -u extglob # Uncomment this to reset extglob for accidental sourcing
 }
 
 exit 0
 APP
 )
-
-__SHAPP="$__MAIN\n$([[ "$__CMD" == "true" || "$__STATE" == "true" ]] && echo "$__MAINCMD" || echo "$__MAINARG")\n$__END"
 
 # EOF

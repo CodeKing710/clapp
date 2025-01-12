@@ -5,7 +5,11 @@ __SHINSTALL=$(cat << INST
 
 # $s_appname's installer
 install() {
-	local repo="\$(find "\$HOME" -type d -name "$__srced" 2>/dev/null | grep repo)"
+	if [[ -e "\$HOME/repos/${s_appname}" ]]; then
+		local repo="\$HOME/repos/${s_appname}"
+	else
+		local repo="\$(find "\$HOME" -type d -name $__srced 2>/dev/null)"
+	fi
 	
 	# Preprocess
 	[[ ! -e "\$HOME/.${s_appname}" ]] && mkdir "\$HOME/.${s_appname}"
