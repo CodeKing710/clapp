@@ -8,7 +8,7 @@
 #  - Node Web App (Various options)
 #  - Python Web App (Flask, Django)
 
-shopt -s extglob
+shopt -qs extglob
 
 # Ensure clapp is installed if the user tries to run it from the repo
 [[ ! -e "$HOME/.clapp" ]] && { mkdir "$HOME/.clapp"; "$repo/install"; }
@@ -84,6 +84,6 @@ clapp() {
 clapp "$@"
 
 # Cleanup when sourced (should not be sourced!)
-[[ "$$" -eq "$BASHPID" ]] && { unset clapp __args __mknode __mkpy __mksh __opts __gstype __gsname __gsloc __gsopts __errtxt __systxt __devtxt __cwd __srced s_appname s_apptype s_apploc s_appopts autoupdate repo __ALT __CMD; shopt -u extglob; }
+[[ "$$" -eq "$BASHPID" ]] && { unset clapp __args __mknode __mkpy __mksh __opts __gstype __gsname __gsloc __gsopts __errtxt __systxt __devtxt __cwd __srced s_appname s_apptype s_apploc s_appopts autoupdate repo __ALT __CMD; shopt -qu extglob; }
 
 exit 0 # Ensure a good exit status upon final completion unless the program breaks earlier
