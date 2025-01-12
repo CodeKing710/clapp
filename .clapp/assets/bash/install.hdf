@@ -5,9 +5,10 @@ __SHINSTALL=$(cat << INST
 
 # $s_appname's installer
 install() {
-	if [[ -e "\$HOME/repos/${s_appname}" ]]; then
-		local repo="\$HOME/repos/${s_appname}"
+	if [[ -e "\$(cat "\$HOME/.${s_appname}/app.cfg" | grep 'repo_path' | cut -d= -f2)" ]]; then
+		local repo="\$(cat "\$HOME/.${s_appname}/app.cfg" | grep 'repo_path' | cut -d= -f2)"
 	else
+		local write_repo_to_cfg=1
 		local repo="\$(find "\$HOME" -type d -name $__srced 2>/dev/null)"
 	fi
 	
@@ -21,6 +22,11 @@ install() {
 	cp -f "\$repo/.${s_appname}/version" "\$HOME/.${s_appname}" || return 1
 	# Setup configurables if they exist in the repo
 	[[ ! -e "\$HOME/.${s_appname}/app.cfg" && -e "\$repo/.${s_appname}/app.cfg" ]] && { cp -f "\$repo/.${s_appname}/app.cfg" "\$HOME/.${s_appname}/app.cfg" || return 1; }
+
+	# Add repo path to cfg file
+	if (( write_repo_to_cfg )); then
+		echo "repo_path=\$repo" >> "\$HOME/.${s_appname}/app.cfg"
+	fi
 
 	# Comment if you want quiet installation
 	echo "$s_appname installed!"
