@@ -40,7 +40,7 @@ __JSAPP=$(cat << APP
   const get = (loc) => {return require(\`\${venv}\${loc}\`);};
 
   // Write any code you want here
-  
+  console.log("Build in Progress");
 })();
 APP
 )

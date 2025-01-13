@@ -40,14 +40,13 @@ __mknode() {
   [[ -z "$(command -v npm)" || -z "$(command -v node)" ]] && { error "NodeJS Not Installed!"; exit 1; }
   __opts # Process general options
   if [[ -n "${s_appopts[venv]}" ]]; then
-      if [[ -n "$(command -v vem)" && ! "${s_appopts[venv]}" =~ "/" ]]; then
-        __VENV="const venv=\"$(vem --node --path "${s_appopts[venv]}")/node_modules/\";"
-      elif [[ "${s_appopts[venv]}" =~ "/" ]]; then
-        __VENV="const venv=\"${s_appopts[venv]}/node_modules/\";"
-      else
-        __VENV="const venv=\"\""
-      fi
-      break
+    if [[ -n "$(command -v vem)" && ! "${s_appopts[venv]}" =~ "/" ]]; then
+      __VENV="const venv=\"$(vem --node --path "${s_appopts[venv]}")/node_modules/\";"
+    elif [[ "${s_appopts[venv]}" =~ "/" ]]; then
+      __VENV="const venv=\"${s_appopts[venv]}/node_modules/\";"
+    fi
+  else
+    __VENV="const venv=\"\""
   fi
 
   # Process Node-specific options
@@ -120,25 +119,26 @@ __mknode() {
 
   # Import respective templates
   source "$js_assets/main.hdf"
-  source "$js_assets/utils.hdf"
-  source "$js_assets/views.hdf"
-  source "$js_assets/models.hdf"
-  source "$js_assets/routes.hdf"
 
   # Begin setup of node project directory
   cd "$s_apploc"
   
   if (( models )); then
+    source "$js_assets/models.hdf"
     [[ ! -d "./models" ]] && mkdir ./models
     echo "$__MODELMAINDOC" > ./models/index.js
     echo "$__MODELUSERDOC" > ./models/user.js
+    chmod -R 755 ./models
   fi
   if (( utils )); then
+    source "$js_assets/utils.hdf"
     [[ ! -d "./utils" ]] && mkdir ./utils
     echo "$__UTILMAINDOC" > ./utils/index.js
     echo "$__UTILVARDOC" > ./utils/tvar.js
+    chmod -R 755 ./utils
   fi
   if (( views )); then
+    source "$js_assets/views.hdf"
     [[ ! -d "./views" ]] && mkdir ./views
     if [[ "$viewext" == ".ejs" ]]; then
       echo "$__VIEWSMAINDOC" > ./views/index.ejs
@@ -150,6 +150,7 @@ __mknode() {
     fi
   fi
   if (( express )); then
+    source "$js_assets/routes.hdf"
     [[ ! -d "./public" ]] && mkdir ./public
     [[ ! -d "./public/css" ]] && mkdir ./public/css
     [[ ! -d "./public/js" ]] && mkdir ./public/js
@@ -157,9 +158,10 @@ __mknode() {
     [[ ! -d "./routes" ]] && mkdir ./routes
     echo "$__ROUTESMAINDOC" > ./routes/index.js
     echo "$__ROUTESMAINROUTE" > ./routes/main.js
-    echo -e "#!/bin/env node\n\n$__JSAPPE" > ./index.js
+    chmod -R 755 ./public ./routes
+    echo -e "#!/usr/bin/env node\n\n$__JSAPPE" > ./index.js
   else
-    echo -e "#!/bin/env node\n\n$__JSAPP" > ./index.js
+    echo -e "#!/usr/bin/env node\n\n$__JSAPP" > ./index.js
   fi
 
   npm init -y >>/dev/null
@@ -167,6 +169,9 @@ __mknode() {
     echo "Installing packages..."
     npm i $pkginstallstr >/dev/null && echo "Packages installed!" || return 1
   fi
+
+  # Ensure the app itself is runnable
+  chmod 755 ./index.js
 
   # If we got here, we succeeded
   log "Successfully created Node app '$s_appname' in location $s_apploc!"
