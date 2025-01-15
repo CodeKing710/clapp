@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-__SHUNINSTALL="$(cat << UNINSTALLER
+__SHUNINSTALL=$(cat << UNINSTALLER
 #/usr/bin/env bash
 
 # Grab the repo path just in case
@@ -18,4 +18,4 @@ yn="\$(echo "\$yn" | tr '[:upper:]' '[:lower:]')"
 # Let the user know that all of ${s_appname}'s files have been removed
 echo "All of ${s_appname}'s files have been removed."
 UNINSTALLER
-)"
+)
