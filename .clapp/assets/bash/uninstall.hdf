@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 __SHUNINSTALL=$(cat << UNINSTALLER
-#/usr/bin/env bash
+#!/usr/bin/env bash
 
 # Grab the repo path just in case
 repo="\$(cat "\$HOME/.${s_appname}/app.cfg" | grep repo_path | cut -d= -f2)"
