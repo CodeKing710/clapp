@@ -1,6 +1,6 @@
 # CLApp Changelog
 
-# What's New (v1.6.0)
+## What's New (v2.0.0)
 
 - Support for making Python apps
 - Support for making Node apps
@@ -16,13 +16,16 @@
 - Cross compatibility (Bash)
 - System-install variant for when you want any user to access the app
 - Versioning controlled by semver (not the node package, general bash script for updating version files of various kinds made by me)
+- Better compatibilty with other versions of bash for running and generated apps
 
-# What's Next (v1.7.0)
+## What's Next (v2.1.0)
 
-- I guess we will see what else
+- POSIX compliant shell apps
 
-# Bugs
-## Key:
+## Bugs
+
+### Key
+
 **CB=CLApp Bug**
 **R=Resolved**
 **O=Outstanding**
