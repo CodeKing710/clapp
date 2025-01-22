@@ -20,7 +20,7 @@ else
 fi
 
 if [ -n "\$autoupdate" ]; then
-	if [[ -e "\$(grep 'repo_path' "\$HOME/.${s_appname}/app.cfg" | cut -d= -f2)" ]]; then
+	if [ -e "\$(grep 'repo_path' "\$HOME/.${s_appname}/app.cfg" | cut -d= -f2)" ]; then
 		repo="\$(grep 'repo_path' "\$HOME/.${s_appname}/app.cfg" | cut -d= -f2)"
 	else
 		repo="\$(find "\$HOME" -type d -name "$__srced" 2>/dev/null)"
