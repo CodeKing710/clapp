@@ -45,7 +45,7 @@ __cfg() {
 		elif [ "\$1" = 'RESET' ]; then
 			__parseargs --reset-cfg
 		fi
-		log "Rule: \$(grep -E '\b\$1\b' "\$cfg" || echo "No Rule Found!")"
+		log "Rule: \$(grep -E "\\\b\$1\\\b" "\$cfg" || echo "No Rule Found!")"
 	shift; done
 
 }
