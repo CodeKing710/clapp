@@ -1,0 +1,69 @@
+__SHAPP=$(cat << APP
+$([[ -n "$COMPAT" ]] && echo "$__MSG")
+
+# Uncomment if you want to use extended glob patterns
+# shopt -qs extglob
+
+# $s_appname's main code
+
+# Load app configuration
+. "\$HOME/.${s_appname}/app.cfg"
+
+# Install the app if the user runs this from the repo
+[ ! -e "\$HOME/.${s_appname}" ] && { mkdir "\$HOME/.${s_appname}"; . "\$repo/install"; }
+
+# Perform autoupdate process
+if [ -e "\$HOME/.${s_appname}/.cfg" ]; then
+	autoupdate="\$(grep 'autoup' "\$HOME/.${s_appname}/.cfg" | cut -d '=' -f2)"
+else
+	autoupdate=1 # Default is to always autoupdate, change to 0 to turn off
+fi
+
+if [ -n "\$autoupdate" ]; then
+	if [[ -e "\$(grep 'repo_path' "\$HOME/.${s_appname}/app.cfg" | cut -d= -f2)" ]]; then
+		repo="\$(grep 'repo_path' "\$HOME/.${s_appname}/app.cfg" | cut -d= -f2)"
+	else
+		repo="\$(find "\$HOME" -type d -name "$__srced" 2>/dev/null)"
+	fi
+
+	# Check for updates
+	if [ -n "\$(diff "\$repo/.${s_appname}/.lib" "\$HOME/.${s_appname}/.lib")" ] \\\\
+  || [ -n "\$(diff "\$repo/.${s_appname}/help" "\$HOME/.${s_appname}/help")" ] \\\\
+  || [ -n "\$(diff "\$repo/.${s_appname}/version" "\$HOME/.${s_appname}/version")" ] \\\\
+  || [ -n "\$(diff "\$repo/${s_appname}" "\$HOME/bin/${s_appname}")" ]; then
+		. "\$repo/install"
+	fi
+fi
+
+
+# Check for unit test
+if [ "\$${s_appname}_TST" == "true" ]; then
+	# Load the lib from the repo and set prgroot to repo
+	printf "[${s_appname}] UNIT TEST MODE! READING FROM REPO!\n"
+	. "\$repo/.${s_appname}/.lib"
+	prgroot="\$repo/.${s_appname}"
+else
+	# Load the library from user's home
+	. "\$HOME/.${s_appname}/.lib"
+fi
+
+__${s_appname}() {
+	if [ -z "\$1" ]; then
+    __parseargs
+  else
+    __parseargs "\$@"
+  fi
+	# Write your app's main flow here
+}
+
+__${s_appname} "\$@"
+
+# Cleanup for accidental sourcing
+if [ "\$\$" = "\$PPID" ]]; then
+	unset __${s_appname} __parseargs __cwd autoupdate repo prgroot __loadcfg __cfg error verbose log lists __cmds states
+	# shopt -qu extglob # Uncomment this to reset extglob for accidental sourcing
+fi
+
+exit 0
+APP
+)

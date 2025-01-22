@@ -237,14 +237,25 @@ __mksh() {
   for value in "${s_appopts_k[@]}"; do
     [[ "$value" == "allone" ]] && ALLONE=true
     [[ "$value" == "compat" ]] && COMPAT=true
+    [[ "$value" == "posix" ]] && POSIX=true
   done
 
   # Pull HDFs (__SHINSTALL, __SHUNINSTALL, __SHAPP, __SHLIB, __CFG)
-  source "$sh_assets/install.hdf"
-  source "$sh_assets/uninstall.hdf"
+  if [[ -n "$POSIX" ]]; then
+    source "$posix_assets/install.hdf"
+    source "$posix_assets/uninstall.hdf"
+    source "$posix_assets/main.hdf"
+    source "$posix_assets/lib.hdf"
+    shebang="#!/bin/sh"
+  else
+    source "$sh_assets/install.hdf"
+    source "$sh_assets/uninstall.hdf"
+    source "$sh_assets/main.hdf"
+    source "$sh_assets/lib.hdf"
+    shebang="#!/usr/bin/env bash"
+  fi
   source "$sh_assets/cfg.hdf"
-  source "$sh_assets/main.hdf"
-  source "$sh_assets/lib.hdf"
+  
   if [[ -n "$COMPAT" ]]; then
     # Add a message to all files to indicate compatibility
     __MSG="# This script should be designed with support for older shells in mind.\n# Things you cannot use to ensure compatibility:\n# - Expansions for such as \${var,,} or \${var^^}\n# - Associative arrays via \`declare -A\`\n#\n# Alternatives must be utilized to ensure compatibility!\n\n"

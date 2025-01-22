@@ -8,6 +8,7 @@ prgroot="$HOME/.clapp"
 sh_assets="$prgroot/assets/bash"
 js_assets="$prgroot/assets/node"
 py_assets="$prgroot/assets/python"
+posix_assets="$prgroot/assets/posix"
 
 # States
 s_appname="$(echo "my_app" | tr '[:upper:]' '[:lower:]')"

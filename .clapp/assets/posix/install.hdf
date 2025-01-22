@@ -1,0 +1,40 @@
+__SHINSTALL=$(cat << INSTALL
+#!/bin/sh
+
+# $s_appname's installer
+install() {
+  write_repo_to_cfg=0
+
+	if [ -n "\$(grep 'repo_path' "\$HOME/.${s_appname}/app.cfg" | cut -d= -f2)" ]; then
+		repo="\$(grep 'repo_path' "\$HOME/.${s_appname}/app.cfg" | cut -d= -f2)"
+	else
+		write_repo_to_cfg=1
+		repo="\$(find "\$HOME" -type d -name $__srced 2>/dev/null)"
+	fi
+	
+	# Preprocess
+	[ ! -e "\$HOME/.${s_appname}" ] && mkdir -p "\$HOME/.${s_appname}"
+
+	# Install
+	cp -f "\$repo/$__srced" "\$HOME/bin" || return 1
+	cp -f "\$repo/.${s_appname}/.lib" "\$HOME/.${s_appname}" || return 1
+	cp -f "\$repo/.${s_appname}/help" "\$HOME/.${s_appname}" || return 1
+	cp -f "\$repo/.${s_appname}/version" "\$HOME/.${s_appname}" || return 1
+	# Setup configurables if they exist in the repo
+	[ ! -e "\$HOME/.${s_appname}/app.cfg" ] && [ -e "\$repo/.${s_appname}/app.cfg" ] && { cp -f "\$repo/.${s_appname}/app.cfg" "\$HOME/.${s_appname}/app.cfg" || return 1; }
+
+	# Add repo path to cfg file
+	if [ "\$write_repo_to_cfg" -eq 1 ]; then
+		echo "repo_path=\$repo" >> "\$HOME/.${s_appname}/app.cfg"
+	fi
+
+	# Comment if you want quiet installation
+	echo "$s_appname installed!"
+  unset repo write_repo_to_cfg
+}
+
+install
+
+exit \$?
+INSTALL
+)

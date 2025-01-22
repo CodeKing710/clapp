@@ -1,0 +1,116 @@
+grep_cmd_msg='error "Did you mean to use \\"\$(echo "\$cmds" | sed -e \\"s/\\^\\|[\\(]\\|[\\)]\\|\\$//g\\" -e \\"s/[\\|]/\\n/g\\" | grep "\$1")\\"?"'
+paren=')'
+single_quote="'"
+
+__SHLIB=$(cat << LIB
+$([[ -n "$COMPAT" ]] && echo "$__MSG")
+
+# $s_appname's Functions and Variables
+
+# Vars & States (Can alternatively be loaded from a separate file)
+__cwd="\$(pwd)"
+prgroot="\$HOME/.${s_appname}"
+
+cmds='^(config|help|version|verbose)$' # Add commands to the regex pattern as needed
+
+# Logging functions
+verbose() { [ -n "\$VERBOSE" ] && printf '\\\e[0;1;35m[VERBOSE]\\\e[0;0;0m '"\$@\\\n"; }
+error() { printf '\\\e[0;1;31m[ERROR]\\\e[0;0;0m '"\$@\\\n" >&2; }
+log() { printf '\\\e[0;1;32m[${s_appname}]\\\e[0;0;0m '"\$@\\\n"; }
+
+# Config
+__loadcfg() {
+	local cfg="\$prgroot/app.cfg"
+	# Variables are created by sourcing the config file
+	# Use this to reload the config file if desired
+	. "\$cfg"
+}
+
+__cfg() {
+	local cfg="\$prgroot/app.cfg"
+	while [ -n "\$1" ]; do
+		if echo "\$1" | grep -q '='; then
+			local rule="\$(echo "\$1" | cut -d '=' -f1)"
+			local oldvalue="\$(grep "\$rule" "\$cfg" | cut -d '=' -f2)"
+			local newvalue="\$(echo "\$1" | cut -d '=' -f2)"
+			sed -i -e "s/\$rule=\$oldvalue/\$rule=\$newvalue/" "\$cfg"
+			log "Updated rule \$rule from \$oldvalue to \$newvalue!"
+			
+			# Once done parsing new config, reload the config file
+			__loadcfg
+		elif [ "\$1" = 'list' ]; then
+			log "Current Settings:"
+			cat "\$cfg"
+			return
+		elif [ "\$1" = 'RESET' ]; then
+			__parseargs --reset-cfg
+		fi
+		log "Rule: \$(grep -E '\b\$1\b' "\$cfg" || echo "No Rule Found!")"
+	shift; done
+
+}
+
+# Argument/command state parser
+__parseargs() {
+	# Process args
+	if [ -z "\$1" ]; then
+    cat "\$prgroot"/help | head -1
+    exit
+  fi
+
+	while [ -n "\$1" ]; do
+		if echo "\$1" | grep -q ^-; then
+			local arg="\$1"
+		else
+			# Convert command-style args to lowercase
+			local arg="\$(echo "\$1" | tr '[:upper:]' '[:lower:]')"
+		fi
+
+		# End case statements with 'exit 0;;' for singletons
+		# A Singleton defines an argument that is to only be run on it's own
+		# Otherwise end a case statement with ';;' to continue to the next case
+		# Use \`exit 1\` to indicate an error
+
+		case "\$arg" in
+			# States
+			-V | --verbose | verbose $paren
+				VERBOSE=1
+				;;
+
+			# Singletons
+			-C | --config | config $paren
+				shift
+				if [ ! -z "\$1" ]; then
+          __cfg "\$@"
+        else
+          error "Must supply rule or 'list'!"
+          exit 1
+        fi
+				exit 0;;
+			--reset-cfg | reset-config $paren
+				log "Resetting ${s_appname} to default configuration..."
+				cp -rf \$(find "\$HOME" -type d -name ${s_appname} 2>/dev/null | head -1)/.${s_appname} "\$HOME/" && echo "${s_appname}${single_quote}s config has been reset!" || error "Failed to reset defaults!"
+				exit 0;;
+			-\\? | -h | --help | help $paren
+				cat "\$prgroot/help"
+				exit 0;;
+			-v | --version | version $paren
+				cat "\$prgroot/version"
+				exit 0;;
+
+			# Catch-all
+			* $paren
+				if echo "\$arg" | grep -q ^-; then
+					cat "\$prgroot/help" | head -1
+					error "\\"\$1\\" is not an argument!"
+				else
+					error "\\"\$1\\" is not a valid command!"
+					$grep_cmd_msg
+				fi
+				exit 1;;
+		esac
+		shift # Move to the next argument
+	done
+}
+LIB
+)

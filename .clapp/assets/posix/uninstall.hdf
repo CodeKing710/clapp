@@ -1,0 +1,20 @@
+__SHUNINSTALL=$(cat << UNINSTALL
+#!/bin/sh
+
+# Grab the repo path just in case
+repo="\$(grep 'repo_path' "\$HOME/.${s_appname}/app.cfg" | cut -d= -f2)"
+
+# Remove ${s_appname} from the system
+rm -rf "\$HOME/.${s_appname}"
+rm "\$HOME/bin/${s_appname}"
+
+# Ask if the user would like to remove the repo
+printf "Would you like to remove the repo as well? [Y/n] "
+read -r yn
+yn="\$(echo "\$yn" | tr '[:upper:]' '[:lower:]')"
+[ "\$yn" = 'y' ] && rm -rf "\$repo"
+
+# Let the user know that all of ${s_appname}'s files have been removed
+echo "All of ${s_appname}'s files have been removed."
+UNINSTALL
+)

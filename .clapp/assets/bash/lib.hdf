@@ -7,6 +7,8 @@ grep_cmd_msg='error "Did you mean to use \\"\$(echo "\$cmds" | sed -e \\"s/\\^\\
 paren=')'
 single_quote="'"
 __SHLIB=$(cat << LIB
+$([[ -n "$COMPAT" ]] && echo "$__MSG")
+
 # $s_appname's Functions and Variables
 
 # Vars & States (Can alternatively be loaded from a separate file)

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # SOURCE THIS FILE FOR HEREDOC INTERPOLATION
 __SHAPP=$(cat << APP
+$([[ -n "$COMPAT" ]] && echo "$__MSG")
+
 # Uncomment if you want to use extended glob patterns
 # shopt -qs extglob
 
