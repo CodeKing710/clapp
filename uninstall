@@ -1,4 +1,4 @@
-#/usr/bin/env bash
+#!/usr/bin/env bash
 
 # Grab the repo path just in case
 repo="$(cat "$HOME/.clapp/app.cfg" | grep repo_path | cut -d= -f2)"
