@@ -59,7 +59,7 @@ __${s_appname}() {
 __${s_appname} "\$@"
 
 # Cleanup for accidental sourcing
-if [ "\$\$" = "\$PPID" ]]; then
+if [ "\$\$" = "\$PPID" ]; then
 	unset __${s_appname} __parseargs __cwd autoupdate repo prgroot __loadcfg __cfg error verbose log lists __cmds states
 	# shopt -qu extglob # Uncomment this to reset extglob for accidental sourcing
 fi
